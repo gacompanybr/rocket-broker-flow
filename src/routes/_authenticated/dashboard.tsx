@@ -25,17 +25,21 @@ import {
   LineChart as LineChartIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/kpi-card";
 import { PeriodFilter } from "@/components/period-filter";
 import {
   previousRange,
   rangeForPreset,
   useCampaignMetrics,
+  useCampaigns,
   useSiteMetrics,
   useSocialMetrics,
   type Range,
 } from "@/lib/data";
 import { brl, dayLabel, num } from "@/lib/format";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
