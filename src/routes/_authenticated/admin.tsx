@@ -541,7 +541,7 @@ function AdminPage() {
               <TableBody>
                 {(settlements.data ?? []).map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell>{dateBR(s.created_at)}</TableCell>
+                    <TableCell>{dateBR(s.calculated_at)}</TableCell>
                     <TableCell className="text-right">{brl(Number(s.total_spent))}</TableCell>
                     <TableCell className="text-right">{brl(Number(s.broker_share_spent))}</TableCell>
                     <TableCell className="text-right">{brl(Number(s.agency_share_spent))}</TableCell>
