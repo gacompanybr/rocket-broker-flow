@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Building2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import logoAsset from "@/assets/arco-logo.png.asset.json";
+
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

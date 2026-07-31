@@ -7,8 +7,9 @@ import {
   Settings as SettingsIcon,
   ShieldCheck,
   LogOut,
-  Building2,
 } from "lucide-react";
+import logoAsset from "@/assets/arco-logo.png.asset.json";
+
 import {
   Sidebar,
   SidebarContent,
