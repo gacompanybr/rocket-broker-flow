@@ -25,17 +25,21 @@ import {
   LineChart as LineChartIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/kpi-card";
 import { PeriodFilter } from "@/components/period-filter";
 import {
   previousRange,
   rangeForPreset,
   useCampaignMetrics,
+  useCampaigns,
   useSiteMetrics,
   useSocialMetrics,
   type Range,
 } from "@/lib/data";
 import { brl, dayLabel, num } from "@/lib/format";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -82,30 +86,62 @@ function sumMetrics(rows: { spend: number; leads: number; impressions: number; r
 const variation = (atual: number, anterior: number) =>
   anterior > 0 ? ((atual - anterior) / anterior) * 100 : null;
 
+type PlatformFilter = "all" | "meta" | "google";
+
+const PLATFORM_TABS: { value: PlatformFilter; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "meta", label: "Meta" },
+  { value: "google", label: "Google" },
+];
+
 function DashboardPage() {
   const [preset, setPreset] = useState("30");
   const [range, setRange] = useState<Range>(rangeForPreset("30"));
+  const [platform, setPlatform] = useState<PlatformFilter>("all");
   const prev = useMemo(() => previousRange(range), [range]);
 
+  const campaigns = useCampaigns();
   const metrics = useCampaignMetrics(range);
   const metricsPrev = useCampaignMetrics(prev);
   const social = useSocialMetrics(range);
   const socialPrev = useSocialMetrics(prev);
   const site = useSiteMetrics(range);
 
-  const totals = useMemo(() => sumMetrics(metrics.data ?? undefined), [metrics.data]);
-  const totalsPrev = useMemo(() => sumMetrics(metricsPrev.data ?? undefined), [metricsPrev.data]);
+  const platformById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of campaigns.data ?? []) map.set(c.id, c.platform);
+    return map;
+  }, [campaigns.data]);
+
+  const keep = useMemo(
+    () => (campaignId: string) =>
+      platform === "all" ? true : platformById.get(campaignId) === platform,
+    [platform, platformById],
+  );
+
+  const rows = useMemo(
+    () => (metrics.data ?? []).filter((r) => keep(r.campaign_id)),
+    [metrics.data, keep],
+  );
+  const rowsPrev = useMemo(
+    () => (metricsPrev.data ?? []).filter((r) => keep(r.campaign_id)),
+    [metricsPrev.data, keep],
+  );
+
+  const totals = useMemo(() => sumMetrics(rows), [rows]);
+  const totalsPrev = useMemo(() => sumMetrics(rowsPrev), [rowsPrev]);
 
   const series = useMemo(() => {
     const byDate = new Map<string, { date: string; gasto: number; leads: number }>();
-    for (const r of metrics.data ?? []) {
+    for (const r of rows) {
       const cur = byDate.get(r.date) ?? { date: r.date, gasto: 0, leads: 0 };
       cur.gasto += Number(r.spend);
       cur.leads += Number(r.leads);
       byDate.set(r.date, cur);
     }
     return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
-  }, [metrics.data]);
+  }, [rows]);
+
 
   const cpl = totals.leads > 0 ? totals.spend / totals.leads : 0;
   const cplPrev = totalsPrev.leads > 0 ? totalsPrev.spend / totalsPrev.leads : 0;
@@ -143,7 +179,33 @@ function DashboardPage() {
         />
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex rounded-lg border bg-card p-1">
+          {PLATFORM_TABS.map((t) => (
+            <Button
+              key={t.value}
+              size="sm"
+              variant={platform === t.value ? "default" : "ghost"}
+              className="h-7 px-3 text-xs"
+              onClick={() => setPlatform(t.value)}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
+        {platform === "meta" ? (
+          <Badge variant="outline" className="border-primary/40 text-primary">
+            Dados reais · Meta Ads
+          </Badge>
+        ) : (
+          <Badge variant="secondary">
+            {platform === "google" ? "Dados simulados · Google Ads" : "Inclui dados simulados (Google Ads)"}
+          </Badge>
+        )}
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+
         <KpiCard
           label="Contas alcançadas"
           value={num(totals.reach)}
@@ -254,7 +316,11 @@ function DashboardPage() {
           <div className="flex items-center gap-2">
             <Instagram className="h-4 w-4 text-primary" />
             <h2 className="text-base font-semibold">Redes sociais</h2>
+            <Badge variant="secondary" className="ml-auto text-[10px]">
+              Instagram real · histórico simulado
+            </Badge>
           </div>
+
           <div className="grid gap-3 sm:grid-cols-3">
             <KpiCard
               label="Seguidores"
@@ -289,7 +355,11 @@ function DashboardPage() {
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 text-primary" />
             <h2 className="text-base font-semibold">Site &amp; Google</h2>
+            <Badge variant="secondary" className="ml-auto text-[10px]">
+              Dados simulados
+            </Badge>
           </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <KpiCard label="Score de SEO" value={`${siteLast?.seo_score ?? 0}/100`} icon={Search} />
             <KpiCard
