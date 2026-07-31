@@ -87,7 +87,23 @@ function CampanhasPage() {
   }, [links.data]);
 
   const toggleStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "active" | "paused" }) => {
+    mutationFn: async ({
+      id,
+      status,
+      platform,
+      externalId,
+    }: {
+      id: string;
+      status: "active" | "paused";
+      platform: string;
+      externalId: string;
+    }) => {
+      if (platform === "meta") {
+        await acaoMeta({
+          data: { externalId, status: status === "active" ? "ACTIVE" : "PAUSED" },
+        });
+        return;
+      }
       const { error } = await supabase.from("campaigns").update({ status }).eq("id", id);
       if (error) throw error;
     },
@@ -99,7 +115,21 @@ function CampanhasPage() {
   });
 
   const salvarOrcamento = useMutation({
-    mutationFn: async ({ id, valor }: { id: string; valor: number }) => {
+    mutationFn: async ({
+      id,
+      valor,
+      platform,
+      externalId,
+    }: {
+      id: string;
+      valor: number;
+      platform: string;
+      externalId: string;
+    }) => {
+      if (platform === "meta") {
+        await acaoMeta({ data: { externalId, dailyBudgetBRL: valor } });
+        return;
+      }
       const { error } = await supabase
         .from("campaigns")
         .update({ daily_budget: valor })
