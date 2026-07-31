@@ -316,7 +316,11 @@ function DashboardPage() {
           <div className="flex items-center gap-2">
             <Instagram className="h-4 w-4 text-primary" />
             <h2 className="text-base font-semibold">Redes sociais</h2>
+            <Badge variant="secondary" className="ml-auto text-[10px]">
+              Instagram real · histórico simulado
+            </Badge>
           </div>
+
           <div className="grid gap-3 sm:grid-cols-3">
             <KpiCard
               label="Seguidores"
