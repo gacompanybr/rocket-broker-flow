@@ -189,9 +189,10 @@ export async function syncMetaCampaigns(admin: Admin) {
   const today = new Date();
   const yesterday = new Date(today.getTime() - 86400000);
   const iso = (d: Date) => d.toISOString().slice(0, 10);
-  const timeParam = firstSync
-    ? "date_preset=last_30d"
-    : `time_range=${encodeURIComponent(JSON.stringify({ since: iso(yesterday), until: iso(today) }))}`;
+  const range = (since: string) =>
+    `time_range=${encodeURIComponent(JSON.stringify({ since, until: iso(today) }))}`;
+  const timeParam = firstSync ? range(META_MIN_CREATED) : range(iso(yesterday));
+
 
   const insightsUrl =
     `${META_GRAPH}/${adAccountId}/insights?level=campaign` +
