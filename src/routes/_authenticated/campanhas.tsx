@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   CartesianGrid,
   Line,
@@ -31,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllCampaignMetrics, useBrokerCampaigns, useCampaigns } from "@/lib/data";
 import { brl, dayLabel, num } from "@/lib/format";
+import { metaCampaignAction } from "@/lib/meta.functions";
 
 export const Route = createFileRoute("/_authenticated/campanhas")({
   head: () => ({
@@ -56,6 +58,7 @@ function CampanhasPage() {
   const metrics = useAllCampaignMetrics();
   const links = useBrokerCampaigns();
   const queryClient = useQueryClient();
+  const acaoMeta = useServerFn(metaCampaignAction);
   const [detalhe, setDetalhe] = useState<string | null>(null);
   const [orcamentoAberto, setOrcamentoAberto] = useState<string | null>(null);
   const [novoOrcamento, setNovoOrcamento] = useState("");
@@ -158,6 +161,7 @@ function CampanhasPage() {
   );
 
   const campanhaDetalhe = campaigns.data?.find((c) => c.id === detalhe);
+  const campanhaOrcamento = campaigns.data?.find((c) => c.id === orcamentoAberto);
 
   const renderTabela = (platform: "meta" | "google") => {
     const rows = (campaigns.data ?? []).filter((c) => c.platform === platform);
@@ -222,6 +226,8 @@ function CampanhasPage() {
                           toggleStatus.mutate({
                             id: c.id,
                             status: c.status === "active" ? "paused" : "active",
+                            platform: c.platform,
+                            externalId: c.external_id,
                           })
                         }
                       >
@@ -345,6 +351,8 @@ function CampanhasPage() {
                 salvarOrcamento.mutate({
                   id: orcamentoAberto,
                   valor: Number(novoOrcamento),
+                  platform: campanhaOrcamento?.platform ?? "meta",
+                  externalId: campanhaOrcamento?.external_id ?? "",
                 })
               }
             >
