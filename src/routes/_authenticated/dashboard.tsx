@@ -86,30 +86,62 @@ function sumMetrics(rows: { spend: number; leads: number; impressions: number; r
 const variation = (atual: number, anterior: number) =>
   anterior > 0 ? ((atual - anterior) / anterior) * 100 : null;
 
+type PlatformFilter = "all" | "meta" | "google";
+
+const PLATFORM_TABS: { value: PlatformFilter; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "meta", label: "Meta" },
+  { value: "google", label: "Google" },
+];
+
 function DashboardPage() {
   const [preset, setPreset] = useState("30");
   const [range, setRange] = useState<Range>(rangeForPreset("30"));
+  const [platform, setPlatform] = useState<PlatformFilter>("all");
   const prev = useMemo(() => previousRange(range), [range]);
 
+  const campaigns = useCampaigns();
   const metrics = useCampaignMetrics(range);
   const metricsPrev = useCampaignMetrics(prev);
   const social = useSocialMetrics(range);
   const socialPrev = useSocialMetrics(prev);
   const site = useSiteMetrics(range);
 
-  const totals = useMemo(() => sumMetrics(metrics.data ?? undefined), [metrics.data]);
-  const totalsPrev = useMemo(() => sumMetrics(metricsPrev.data ?? undefined), [metricsPrev.data]);
+  const platformById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of campaigns.data ?? []) map.set(c.id, c.platform);
+    return map;
+  }, [campaigns.data]);
+
+  const keep = useMemo(
+    () => (campaignId: string) =>
+      platform === "all" ? true : platformById.get(campaignId) === platform,
+    [platform, platformById],
+  );
+
+  const rows = useMemo(
+    () => (metrics.data ?? []).filter((r) => keep(r.campaign_id)),
+    [metrics.data, keep],
+  );
+  const rowsPrev = useMemo(
+    () => (metricsPrev.data ?? []).filter((r) => keep(r.campaign_id)),
+    [metricsPrev.data, keep],
+  );
+
+  const totals = useMemo(() => sumMetrics(rows), [rows]);
+  const totalsPrev = useMemo(() => sumMetrics(rowsPrev), [rowsPrev]);
 
   const series = useMemo(() => {
     const byDate = new Map<string, { date: string; gasto: number; leads: number }>();
-    for (const r of metrics.data ?? []) {
+    for (const r of rows) {
       const cur = byDate.get(r.date) ?? { date: r.date, gasto: 0, leads: 0 };
       cur.gasto += Number(r.spend);
       cur.leads += Number(r.leads);
       byDate.set(r.date, cur);
     }
     return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
-  }, [metrics.data]);
+  }, [rows]);
+
 
   const cpl = totals.leads > 0 ? totals.spend / totals.leads : 0;
   const cplPrev = totalsPrev.leads > 0 ? totalsPrev.spend / totalsPrev.leads : 0;
