@@ -79,12 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Painel de Tráfego & CRM Imobiliário" },
+      { title: "Arco — Painel de Tráfego & CRM Imobiliário" },
       {
         name: "description",
         content:
-          "Dashboard de tráfego pago e mini-CRM para imobiliárias: campanhas, aportes de corretores e acertos.",
+          "Dashboard de tráfego pago e mini-CRM da Arco Gerenciamento Imobiliário: campanhas, aportes de corretores e acertos.",
       },
+
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

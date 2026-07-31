@@ -19,25 +19,38 @@ function AuthenticatedLayout() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // Realtime: novas métricas/alertas atualizam a tela sem refresh.
+  // Realtime: novas métricas/alertas atualizam a tela sem refresh (com debounce).
   useEffect(() => {
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
+    const invalidate = (key: string) => {
+      clearTimeout(timers.get(key));
+      timers.set(
+        key,
+        setTimeout(() => {
+          void queryClient.invalidateQueries({ queryKey: [key] });
+        }, 800),
+      );
+    };
+
     const channel = supabase
       .channel("dashboard-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "campaign_metrics" }, () => {
-        void queryClient.invalidateQueries({ queryKey: ["campaign_metrics"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "broker_campaigns" }, () => {
-        void queryClient.invalidateQueries({ queryKey: ["broker_campaigns"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => {
-        void queryClient.invalidateQueries({ queryKey: ["alerts"] });
-      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "campaign_metrics" }, () =>
+        invalidate("campaign_metrics"),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "broker_campaigns" }, () =>
+        invalidate("broker_campaigns"),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () =>
+        invalidate("alerts"),
+      )
       .subscribe();
 
     return () => {
+      timers.forEach((t) => clearTimeout(t));
       void supabase.removeChannel(channel);
     };
   }, [queryClient, router]);
+
 
   return (
     <SidebarProvider>

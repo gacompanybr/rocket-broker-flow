@@ -7,8 +7,9 @@ import {
   Settings as SettingsIcon,
   ShieldCheck,
   LogOut,
-  Building2,
 } from "lucide-react";
+import logoAsset from "@/assets/arco-logo.png.asset.json";
+
 import {
   Sidebar,
   SidebarContent,
@@ -60,15 +61,16 @@ export function AppSidebar() {
     <Sidebar collapsible="offcanvas">
       <SidebarHeader className="gap-0 px-4 py-5">
         <div className="flex items-center gap-2.5">
-          <span className="rounded-lg bg-primary/15 p-2 text-primary">
-            <Building2 className="h-5 w-5" />
-          </span>
-          <div className="leading-tight">
-            <p className="text-sm font-semibold">Tráfego & CRM</p>
-            <p className="text-xs text-muted-foreground">Imobiliária</p>
-          </div>
+          <img
+            src={logoAsset.url}
+            alt="Arco Gerenciamento Imobiliário"
+            width={160}
+            height={160}
+            className="h-10 w-auto"
+          />
         </div>
       </SidebarHeader>
+
 
       <SidebarContent>
         <SidebarGroup>
