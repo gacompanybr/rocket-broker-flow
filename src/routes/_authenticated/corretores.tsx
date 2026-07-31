@@ -5,7 +5,6 @@ import { AlertTriangle, CheckCircle2, Flag, TrendingUp, Users } from "lucide-rea
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
