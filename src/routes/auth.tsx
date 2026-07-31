@@ -85,15 +85,19 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
-        <div className="mb-6 flex items-center gap-3">
-          <span className="rounded-xl bg-primary/15 p-2.5 text-primary">
-            <Building2 className="h-6 w-6" />
-          </span>
-          <div>
-            <h1 className="text-xl font-semibold">Painel de Tráfego &amp; CRM</h1>
-            <p className="text-sm text-muted-foreground">Gestão de campanhas da imobiliária</p>
-          </div>
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
+          <img
+            src={logoAsset.url}
+            alt="Arco Gerenciamento Imobiliário"
+            width={280}
+            height={280}
+            className="h-16 w-auto"
+          />
+          <p className="text-sm text-muted-foreground">
+            Painel de tráfego pago e CRM da imobiliária
+          </p>
         </div>
+
 
         <Card className="surface-card p-6">
           <Tabs defaultValue="login">
