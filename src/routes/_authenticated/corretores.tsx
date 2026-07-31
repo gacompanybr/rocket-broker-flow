@@ -207,17 +207,20 @@ function CorretoresPage() {
                     {pct(ratio)}
                   </span>
                 </div>
-                <Progress
-                  value={Math.min(ratio, 100)}
-                  className="h-2 bg-secondary"
-                  indicatorClassName={
-                    tone === "destructive"
-                      ? "bg-destructive"
-                      : tone === "warning"
-                        ? "bg-warning"
-                        : "bg-success"
-                  }
-                />
+                <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className={
+                      "h-full rounded-full transition-all " +
+                      (tone === "destructive"
+                        ? "bg-destructive"
+                        : tone === "warning"
+                          ? "bg-warning"
+                          : "bg-success")
+                    }
+                    style={{ width: `${Math.min(ratio, 100)}%` }}
+                  />
+                </div>
+
               </div>
 
               <div className="space-y-2 border-t border-border/60 pt-3">
