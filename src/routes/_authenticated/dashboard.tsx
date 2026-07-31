@@ -355,7 +355,11 @@ function DashboardPage() {
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 text-primary" />
             <h2 className="text-base font-semibold">Site &amp; Google</h2>
+            <Badge variant="secondary" className="ml-auto text-[10px]">
+              Dados simulados
+            </Badge>
           </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <KpiCard label="Score de SEO" value={`${siteLast?.seo_score ?? 0}/100`} icon={Search} />
             <KpiCard
