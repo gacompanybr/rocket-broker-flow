@@ -68,10 +68,16 @@ function AuthPage() {
       return;
     }
     if (!data.session) {
-      toast.success("Conta criada", {
-        description: "Confirme seu e-mail para acessar o painel.",
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: senha,
       });
-      return;
+      if (signInError) {
+        toast.error("Conta criada, mas não foi possível entrar", {
+          description: signInError.message,
+        });
+        return;
+      }
     }
     navigate({ to: "/dashboard", replace: true });
   };
