@@ -193,15 +193,14 @@ function DashboardPage() {
             </Button>
           ))}
         </div>
-        {platform === "meta" ? (
+        {platform === "google" ? (
+          <Badge variant="secondary">Google Ads ainda não integrado</Badge>
+        ) : (
           <Badge variant="outline" className="border-primary/40 text-primary">
             Dados reais · Meta Ads
           </Badge>
-        ) : (
-          <Badge variant="secondary">
-            {platform === "google" ? "Dados simulados · Google Ads" : "Inclui dados simulados (Google Ads)"}
-          </Badge>
         )}
+
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
