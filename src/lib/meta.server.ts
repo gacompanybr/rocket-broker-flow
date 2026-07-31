@@ -89,6 +89,9 @@ async function graphAll<T>(firstUrl: string): Promise<T[]> {
 
 const centsToBRL = (v: unknown) => (v == null ? null : Number(v) / 100);
 
+/** Só importamos campanhas criadas a partir desta data (inclusive). */
+export const META_MIN_CREATED = "2026-06-30";
+
 type MetaCampaign = {
   id: string;
   name: string;
@@ -97,6 +100,7 @@ type MetaCampaign = {
   objective?: string;
   daily_budget?: string;
   lifetime_budget?: string;
+  created_time?: string;
 };
 
 export function mapCampaignStatus(c: MetaCampaign): "active" | "paused" | "finished" {
