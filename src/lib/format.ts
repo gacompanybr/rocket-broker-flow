@@ -19,3 +19,9 @@ export const dateBR = (value: string | Date | null | undefined) => {
 };
 
 export const dayLabel = (iso: string) => iso.slice(8, 10) + "/" + iso.slice(5, 7);
+
+export const dateTime = (value: string | Date | null | undefined) => {
+  if (!value) return "-";
+  const d = typeof value === "string" ? new Date(value) : value;
+  return d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+};

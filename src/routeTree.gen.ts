@@ -17,6 +17,8 @@ import { Route as AuthenticatedCampanhasRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ApiPublicHooksSyncMetaCampaignsRouteImport } from './routes/api/public/hooks/sync-meta-campaigns'
+import { Route as ApiPublicHooksSyncMetaSocialRouteImport } from './routes/api/public/hooks/sync-meta-social'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +60,18 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksSyncMetaCampaignsRoute =
+  ApiPublicHooksSyncMetaCampaignsRouteImport.update({
+    id: '/api/public/hooks/sync-meta-campaigns',
+    path: '/api/public/hooks/sync-meta-campaigns',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSyncMetaSocialRoute =
+  ApiPublicHooksSyncMetaSocialRouteImport.update({
+    id: '/api/public/hooks/sync-meta-social',
+    path: '/api/public/hooks/sync-meta-social',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,6 +81,8 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/public/hooks/sync-meta-campaigns': typeof ApiPublicHooksSyncMetaCampaignsRoute
+  '/api/public/hooks/sync-meta-social': typeof ApiPublicHooksSyncMetaSocialRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,6 +92,8 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/public/hooks/sync-meta-campaigns': typeof ApiPublicHooksSyncMetaCampaignsRoute
+  '/api/public/hooks/sync-meta-social': typeof ApiPublicHooksSyncMetaSocialRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,6 +105,8 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/public/hooks/sync-meta-campaigns': typeof ApiPublicHooksSyncMetaCampaignsRoute
+  '/api/public/hooks/sync-meta-social': typeof ApiPublicHooksSyncMetaSocialRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,6 +118,8 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
+    | '/api/public/hooks/sync-meta-campaigns'
+    | '/api/public/hooks/sync-meta-social'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -107,6 +129,8 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
+    | '/api/public/hooks/sync-meta-campaigns'
+    | '/api/public/hooks/sync-meta-social'
   id:
     | '__root__'
     | '/'
@@ -117,12 +141,16 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
+    | '/api/public/hooks/sync-meta-campaigns'
+    | '/api/public/hooks/sync-meta-social'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicHooksSyncMetaCampaignsRoute: typeof ApiPublicHooksSyncMetaCampaignsRoute
+  ApiPublicHooksSyncMetaSocialRoute: typeof ApiPublicHooksSyncMetaSocialRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -183,6 +211,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/sync-meta-campaigns': {
+      id: '/api/public/hooks/sync-meta-campaigns'
+      path: '/api/public/hooks/sync-meta-campaigns'
+      fullPath: '/api/public/hooks/sync-meta-campaigns'
+      preLoaderRoute: typeof ApiPublicHooksSyncMetaCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/sync-meta-social': {
+      id: '/api/public/hooks/sync-meta-social'
+      path: '/api/public/hooks/sync-meta-social'
+      fullPath: '/api/public/hooks/sync-meta-social'
+      preLoaderRoute: typeof ApiPublicHooksSyncMetaSocialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -209,17 +251,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicHooksSyncMetaCampaignsRoute: ApiPublicHooksSyncMetaCampaignsRoute,
+  ApiPublicHooksSyncMetaSocialRoute: ApiPublicHooksSyncMetaSocialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

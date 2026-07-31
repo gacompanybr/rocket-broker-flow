@@ -216,6 +216,36 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_logs: {
+        Row: {
+          code: number | null
+          created_at: string
+          details: Json | null
+          id: string
+          level: string
+          message: string
+          source: string
+        }
+        Insert: {
+          code?: number | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          level?: string
+          message: string
+          source: string
+        }
+        Update: {
+          code?: number | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          level?: string
+          message?: string
+          source?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ativo: boolean

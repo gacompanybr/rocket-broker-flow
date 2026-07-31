@@ -169,3 +169,20 @@ export function useSettings() {
     },
   });
 }
+
+export function useIntegrationLogs(source?: string) {
+  return useQuery({
+    queryKey: ["integration_logs", source ?? "all"],
+    queryFn: async () => {
+      let q = supabase
+        .from("integration_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (source) q = q.eq("source", source);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data;
+    },
+  });
+}
