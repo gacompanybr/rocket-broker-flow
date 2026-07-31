@@ -89,6 +89,9 @@ async function graphAll<T>(firstUrl: string): Promise<T[]> {
 
 const centsToBRL = (v: unknown) => (v == null ? null : Number(v) / 100);
 
+/** Só importamos campanhas criadas a partir desta data (inclusive). */
+export const META_MIN_CREATED = "2026-06-30";
+
 type MetaCampaign = {
   id: string;
   name: string;
@@ -97,6 +100,7 @@ type MetaCampaign = {
   objective?: string;
   daily_budget?: string;
   lifetime_budget?: string;
+  created_time?: string;
 };
 
 export function mapCampaignStatus(c: MetaCampaign): "active" | "paused" | "finished" {
@@ -136,9 +140,16 @@ export async function syncMetaCampaigns(admin: Admin) {
   const { token, adAccountId } = metaEnv();
 
   const campaignsUrl =
-    `${META_GRAPH}/${adAccountId}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget` +
+    `${META_GRAPH}/${adAccountId}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,created_time` +
     `&limit=100&access_token=${encodeURIComponent(token)}`;
-  const remote = await graphAll<MetaCampaign>(campaignsUrl);
+  const all = await graphAll<MetaCampaign>(campaignsUrl);
+
+  const cutoff = new Date(`${META_MIN_CREATED}T00:00:00Z`).getTime();
+  const remote = all.filter((c) => {
+    if (!c.created_time) return true;
+    const t = new Date(c.created_time).getTime();
+    return Number.isNaN(t) || t >= cutoff;
+  });
 
   for (const c of remote) {
     await admin
@@ -151,10 +162,12 @@ export async function syncMetaCampaigns(admin: Admin) {
           status: mapCampaignStatus(c),
           objetivo: c.objective ?? null,
           daily_budget: centsToBRL(c.daily_budget) ?? centsToBRL(c.lifetime_budget),
+          ...(c.created_time ? { criada_em: new Date(c.created_time).toISOString() } : {}),
         },
         { onConflict: "platform,external_id" },
       );
   }
+
 
   const { data: localCampaigns } = await admin
     .from("campaigns")
@@ -176,9 +189,10 @@ export async function syncMetaCampaigns(admin: Admin) {
   const today = new Date();
   const yesterday = new Date(today.getTime() - 86400000);
   const iso = (d: Date) => d.toISOString().slice(0, 10);
-  const timeParam = firstSync
-    ? "date_preset=last_30d"
-    : `time_range=${encodeURIComponent(JSON.stringify({ since: iso(yesterday), until: iso(today) }))}`;
+  const range = (since: string) =>
+    `time_range=${encodeURIComponent(JSON.stringify({ since, until: iso(today) }))}`;
+  const timeParam = firstSync ? range(META_MIN_CREATED) : range(iso(yesterday));
+
 
   const insightsUrl =
     `${META_GRAPH}/${adAccountId}/insights?level=campaign` +
