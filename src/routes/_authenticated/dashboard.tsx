@@ -179,7 +179,33 @@ function DashboardPage() {
         />
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex rounded-lg border bg-card p-1">
+          {PLATFORM_TABS.map((t) => (
+            <Button
+              key={t.value}
+              size="sm"
+              variant={platform === t.value ? "default" : "ghost"}
+              className="h-7 px-3 text-xs"
+              onClick={() => setPlatform(t.value)}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
+        {platform === "meta" ? (
+          <Badge variant="outline" className="border-primary/40 text-primary">
+            Dados reais · Meta Ads
+          </Badge>
+        ) : (
+          <Badge variant="secondary">
+            {platform === "google" ? "Dados simulados · Google Ads" : "Inclui dados simulados (Google Ads)"}
+          </Badge>
+        )}
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+
         <KpiCard
           label="Contas alcançadas"
           value={num(totals.reach)}
