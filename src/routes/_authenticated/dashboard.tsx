@@ -355,7 +355,7 @@ function DashboardPage() {
             <Search className="h-4 w-4 text-primary" />
             <h2 className="text-base font-semibold">Site &amp; Google</h2>
             <Badge variant="secondary" className="ml-auto text-[10px]">
-              Dados simulados
+              Ainda não integrado
             </Badge>
           </div>
 
