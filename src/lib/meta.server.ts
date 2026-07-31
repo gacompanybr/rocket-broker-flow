@@ -140,9 +140,16 @@ export async function syncMetaCampaigns(admin: Admin) {
   const { token, adAccountId } = metaEnv();
 
   const campaignsUrl =
-    `${META_GRAPH}/${adAccountId}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget` +
+    `${META_GRAPH}/${adAccountId}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,created_time` +
     `&limit=100&access_token=${encodeURIComponent(token)}`;
-  const remote = await graphAll<MetaCampaign>(campaignsUrl);
+  const all = await graphAll<MetaCampaign>(campaignsUrl);
+
+  const cutoff = new Date(`${META_MIN_CREATED}T00:00:00Z`).getTime();
+  const remote = all.filter((c) => {
+    if (!c.created_time) return true;
+    const t = new Date(c.created_time).getTime();
+    return Number.isNaN(t) || t >= cutoff;
+  });
 
   for (const c of remote) {
     await admin
@@ -155,10 +162,12 @@ export async function syncMetaCampaigns(admin: Admin) {
           status: mapCampaignStatus(c),
           objetivo: c.objective ?? null,
           daily_budget: centsToBRL(c.daily_budget) ?? centsToBRL(c.lifetime_budget),
+          ...(c.created_time ? { criada_em: new Date(c.created_time).toISOString() } : {}),
         },
         { onConflict: "platform,external_id" },
       );
   }
+
 
   const { data: localCampaigns } = await admin
     .from("campaigns")
