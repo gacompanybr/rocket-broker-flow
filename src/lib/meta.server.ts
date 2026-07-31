@@ -79,7 +79,7 @@ async function graphAll<T>(firstUrl: string): Promise<T[]> {
   let url: string | undefined = firstUrl;
   let guard = 0;
   while (url && guard < 25) {
-    const page = await graph<Paged<T>>(url);
+    const page: Paged<T> = await graph<Paged<T>>(url);
     out.push(...(page.data ?? []));
     url = page.paging?.next;
     guard += 1;
