@@ -98,12 +98,24 @@ function AuthPage() {
             className="h-16 w-auto"
           />
           <p className="text-sm text-muted-foreground">
-            Painel de tráfego pago e CRM da imobiliária
+            Dashboard interativo de campanhas e performance
           </p>
         </div>
 
-
         <Card className="surface-card p-6">
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={loading}
+            onClick={entrarComGoogle}
+          >
+            Continuar com Google
+          </Button>
+          <div className="my-4 flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">ou</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
           <Tabs defaultValue="login">
             <TabsList className="w-full">
               <TabsTrigger value="login" className="flex-1">
