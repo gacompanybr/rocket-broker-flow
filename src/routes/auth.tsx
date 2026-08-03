@@ -10,20 +10,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Entrar | Painel de Tráfego & CRM Imobiliário" },
+      { title: "Entrar | OArco Analytics" },
       {
         name: "description",
-        content: "Acesse o painel de tráfego pago e CRM da imobiliária com e-mail e senha.",
+        content:
+          "Acesse o dashboard interativo de campanhas e performance da imobiliária OArco.",
       },
-      { property: "og:title", content: "Entrar no Painel de Tráfego & CRM" },
+      { property: "og:title", content: "Entrar | OArco Analytics" },
       {
         property: "og:description",
-        content: "Acesso restrito à agência, ao dono da imobiliária e aos corretores.",
+        content:
+          "Dashboard interativo de campanhas e performance da imobiliária OArco.",
       },
     ],
   }),
@@ -42,6 +45,23 @@ function AuthPage() {
       if (data.session) navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
+
+  const entrarComGoogle = async () => {
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setLoading(false);
+      toast.error("Não foi possível entrar com o Google", {
+        description: result.error.message,
+      });
+      return;
+    }
+    if (result.redirected) return;
+    setLoading(false);
+    navigate({ to: "/dashboard", replace: true });
+  };
 
   const entrar = async () => {
     setLoading(true);
@@ -96,12 +116,24 @@ function AuthPage() {
             className="h-16 w-auto"
           />
           <p className="text-sm text-muted-foreground">
-            Painel de tráfego pago e CRM da imobiliária
+            Dashboard interativo de campanhas e performance
           </p>
         </div>
 
-
         <Card className="surface-card p-6">
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={loading}
+            onClick={entrarComGoogle}
+          >
+            Continuar com Google
+          </Button>
+          <div className="my-4 flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">ou</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
           <Tabs defaultValue="login">
             <TabsList className="w-full">
               <TabsTrigger value="login" className="flex-1">
