@@ -15,15 +15,17 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Entrar | Painel de Tráfego & CRM Imobiliário" },
+      { title: "Entrar | OArco Analytics" },
       {
         name: "description",
-        content: "Acesse o painel de tráfego pago e CRM da imobiliária com e-mail e senha.",
+        content:
+          "Acesse o dashboard interativo de campanhas e performance da imobiliária OArco.",
       },
-      { property: "og:title", content: "Entrar no Painel de Tráfego & CRM" },
+      { property: "og:title", content: "Entrar | OArco Analytics" },
       {
         property: "og:description",
-        content: "Acesso restrito à agência, ao dono da imobiliária e aos corretores.",
+        content:
+          "Dashboard interativo de campanhas e performance da imobiliária OArco.",
       },
     ],
   }),

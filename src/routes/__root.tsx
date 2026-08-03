@@ -79,14 +79,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Arco — Painel de Tráfego & CRM Imobiliário" },
+      { title: "OArco Analytics" },
       {
         name: "description",
         content:
-          "Dashboard de tráfego pago e mini-CRM da Arco Gerenciamento Imobiliário: campanhas, aportes de corretores e acertos.",
+          "Dashboard interativo de campanhas e performance da imobiliária OArco.",
       },
 
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "OArco Analytics" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -99,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
   shellComponent: RootShell,
