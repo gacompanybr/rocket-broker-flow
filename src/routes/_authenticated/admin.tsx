@@ -373,6 +373,7 @@ function AdminPage() {
                   <TableHead>E-mail</TableHead>
                   <TableHead>Telefone</TableHead>
                   <TableHead>Login vinculado</TableHead>
+                  {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -388,11 +389,123 @@ function AdminPage() {
                         <span className="text-muted-foreground">sem login</span>
                       )}
                     </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setEditandoCorretor({
+                                id: b.id,
+                                nome: b.nome,
+                                email: b.email ?? "",
+                                telefone: b.telefone ?? "",
+                              })
+                            }
+                          >
+                            <Pencil className="h-3.5 w-3.5" /> Editar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setExcluindoCorretor({ id: b.id, nome: b.nome })}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Excluir
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </Card>
+
+          <Dialog
+            open={!!editandoCorretor}
+            onOpenChange={(o) => !o && setEditandoCorretor(null)}
+          >
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Editar corretor</DialogTitle>
+                <DialogDescription>
+                  Atualize os dados de contato do corretor cadastrado.
+                </DialogDescription>
+              </DialogHeader>
+              {editandoCorretor && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nome</Label>
+                    <Input
+                      value={editandoCorretor.nome}
+                      onChange={(e) =>
+                        setEditandoCorretor({ ...editandoCorretor, nome: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>E-mail</Label>
+                    <Input
+                      value={editandoCorretor.email}
+                      onChange={(e) =>
+                        setEditandoCorretor({ ...editandoCorretor, email: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefone</Label>
+                    <Input
+                      value={editandoCorretor.telefone}
+                      onChange={(e) =>
+                        setEditandoCorretor({ ...editandoCorretor, telefone: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditandoCorretor(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={() => mEditarCorretor.mutate()}
+                  disabled={mEditarCorretor.isPending || !editandoCorretor?.nome.trim()}
+                >
+                  Salvar alterações
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={!!excluindoCorretor}
+            onOpenChange={(o) => !o && setExcluindoCorretor(null)}
+          >
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Excluir corretor</DialogTitle>
+                <DialogDescription>
+                  {excluindoCorretor?.nome} será removido. Vínculos de campanha, aportes e acertos
+                  desse corretor também serão apagados.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setExcluindoCorretor(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => mExcluirCorretor.mutate()}
+                  disabled={mExcluirCorretor.isPending}
+                >
+                  Excluir definitivamente
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
         </TabsContent>
 
         <TabsContent value="vinculos" className="mt-4 space-y-4">
