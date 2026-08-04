@@ -50,7 +50,7 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 function AdminPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isStaff } = useAuth();
   const brokers = useBrokers();
   const campaigns = useCampaigns();
   const links = useBrokerCampaigns();
@@ -83,7 +83,7 @@ function AdminPage() {
       const roleMap = new Map((roles ?? []).map((r) => [r.user_id, r.role as string]));
       return (profiles ?? []).map((p) => ({ ...p, role: roleMap.get(p.id) ?? "broker" }));
     },
-    enabled: isAdmin,
+    enabled: isStaff,
   });
 
   const mCriarUsuario = useMutation({
@@ -183,10 +183,10 @@ function AdminPage() {
     [links.data],
   );
 
-  if (!isAdmin) {
+  if (!isStaff) {
     return (
       <Card className="surface-card p-8 text-center text-muted-foreground">
-        Área restrita ao administrador da agência.
+        Área restrita à agência e ao dono da imobiliária.
       </Card>
     );
   }

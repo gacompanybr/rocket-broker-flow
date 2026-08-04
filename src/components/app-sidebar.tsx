@@ -34,7 +34,7 @@ const ROLE_LABEL: Record<string, string> = {
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { role, isAdmin, user } = useAuth();
+  const { role, isStaff, user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -42,7 +42,7 @@ export function AppSidebar() {
     { title: "Dashboard geral", url: "/dashboard", icon: BarChart3 },
     { title: "Campanhas", url: "/campanhas", icon: Megaphone },
     { title: "Corretores", url: "/corretores", icon: Users },
-    ...(isAdmin
+    ...(isStaff
       ? [
           { title: "Configurações", url: "/configuracoes", icon: SettingsIcon },
           { title: "Admin", url: "/admin", icon: ShieldCheck },
