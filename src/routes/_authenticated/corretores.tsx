@@ -157,20 +157,20 @@ function CorretoresPage() {
           const tone = budgetTone(ratio);
 
           return (
-            <Card key={brokerId} className="surface-card gap-4 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
+            <Card key={brokerId} className="surface-card gap-5 p-6">
+              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <span className="rounded-lg bg-primary/10 p-2 text-primary">
                     <Users className="h-5 w-5" />
                   </span>
-                  <div>
-                    <h2 className="font-semibold">{grupo.nome}</h2>
-                    <p className="text-xs text-muted-foreground">
-                      {ativas} campanha(s) ativa(s) · {num(leads)} leads gerados
+                  <div className="min-w-0">
+                    <h2 className="truncate font-semibold">{grupo.nome}</h2>
+                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                      {ativas} campanha(s) ativa(s) · {num(leads)} leads
                     </p>
                   </div>
                 </div>
-                <span className="text-right text-sm">
+                <span className="shrink-0 text-right text-sm">
                   <span className="block text-xs text-muted-foreground">Orçamento total</span>
                   <strong>{brl(orcamento)}</strong>
                 </span>
@@ -222,7 +222,7 @@ function CorretoresPage() {
 
               </div>
 
-              <div className="space-y-2 border-t border-border/60 pt-3">
+              <div className="space-y-3 border-t border-border/60 pt-4">
                 {grupo.vinculos.map((l) => {
                   const g = gastoPorCampanha.get(l.campaign_id)?.spend ?? 0;
                   const total = Number(l.total_budget ?? 0);
@@ -231,18 +231,21 @@ function CorretoresPage() {
                     : budgetStatus(g, total);
                   const vAlerts = alertasPorVinculo.get(l.id) ?? [];
                   return (
-                    <div key={l.id} className="rounded-lg border border-border/60 bg-background/40 p-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="min-w-0">
+                    <div key={l.id} className="rounded-lg border border-border/60 bg-background/40 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+                        <div className="min-w-0 flex-1 space-y-1.5">
                           <p className="truncate text-sm font-medium">
                             {l.campaigns?.nome ?? "Campanha"}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {brl(g)} de {brl(total)} · aporte {brl(Number(l.broker_deposit))} +
-                            match {brl(Number(l.agency_match))}
+                          <p className="text-xs leading-relaxed text-muted-foreground">
+                            {brl(g)} de {brl(total)}
+                          </p>
+                          <p className="text-xs leading-relaxed text-muted-foreground">
+                            Aporte {brl(Number(l.broker_deposit))} · Match{" "}
+                            {brl(Number(l.agency_match))}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex shrink-0 flex-wrap items-center gap-2">
                           <StatusBadge status={st} />
                           {isAdmin && !l.finished_at && (
                             <Button size="sm" variant="outline" onClick={() => setFinalizando(l.id)}>
