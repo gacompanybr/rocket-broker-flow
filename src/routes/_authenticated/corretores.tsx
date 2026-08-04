@@ -176,18 +176,18 @@ function CorretoresPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground">Aporte do corretor</p>
-                  <p className="font-semibold">{brl(aporte)}</p>
+              <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                <div className="rounded-lg bg-secondary/50 p-3">
+                  <p className="text-xs leading-snug text-muted-foreground">Aporte do corretor</p>
+                  <p className="mt-1 font-semibold">{brl(aporte)}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Imobiliária cobriu</p>
-                  <p className="font-semibold">{brl(match)}</p>
+                <div className="rounded-lg bg-secondary/50 p-3">
+                  <p className="text-xs leading-snug text-muted-foreground">Imobiliária cobriu</p>
+                  <p className="mt-1 font-semibold">{brl(match)}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Gasto até agora</p>
-                  <p className="font-semibold">{brl(gasto)}</p>
+                <div className="rounded-lg bg-secondary/50 p-3">
+                  <p className="text-xs leading-snug text-muted-foreground">Gasto até agora</p>
+                  <p className="mt-1 font-semibold">{brl(gasto)}</p>
                 </div>
               </div>
 
