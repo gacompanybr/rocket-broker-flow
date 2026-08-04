@@ -10,6 +10,8 @@ type AuthState = {
   brokerIds: string[];
   loading: boolean;
   isAdmin: boolean;
+  /** Admin da agência ou dono da imobiliária: acesso a Configurações e Admin. */
+  isStaff: boolean;
 };
 
 export const AuthContext = createContext<AuthState>({
@@ -18,6 +20,7 @@ export const AuthContext = createContext<AuthState>({
   brokerIds: [],
   loading: true,
   isAdmin: false,
+  isStaff: false,
 });
 
 export function useAuth() {
