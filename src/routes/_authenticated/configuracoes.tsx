@@ -42,7 +42,7 @@ const CAMPOS: { key: string; label: string; hint: string }[] = [
 ];
 
 function ConfiguracoesPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isStaff } = useAuth();
   const settings = useSettings();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Record<string, string>>({});
@@ -88,10 +88,10 @@ function ConfiguracoesPage() {
     onError: (e: Error) => toast.error("Erro ao salvar", { description: e.message }),
   });
 
-  if (!isAdmin) {
+  if (!isStaff) {
     return (
       <Card className="surface-card p-8 text-center text-muted-foreground">
-        Área restrita ao administrador da agência.
+        Área restrita à agência e ao dono da imobiliária.
       </Card>
     );
   }

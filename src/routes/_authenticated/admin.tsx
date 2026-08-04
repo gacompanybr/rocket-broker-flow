@@ -2,13 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Link2, Plus, ShieldCheck, UserPlus, Wallet } from "lucide-react";
+import { Link2, Pencil, Plus, ShieldCheck, Trash2, UserPlus, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Select,
@@ -50,7 +58,7 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 function AdminPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isStaff } = useAuth();
   const brokers = useBrokers();
   const campaigns = useCampaigns();
   const links = useBrokerCampaigns();
@@ -68,6 +76,15 @@ function AdminPage() {
     brokerId: "",
   });
   const [novoCorretor, setNovoCorretor] = useState({ nome: "", email: "", telefone: "" });
+  const [editandoCorretor, setEditandoCorretor] = useState<{
+    id: string;
+    nome: string;
+    email: string;
+    telefone: string;
+  } | null>(null);
+  const [excluindoCorretor, setExcluindoCorretor] = useState<{ id: string; nome: string } | null>(
+    null,
+  );
   const [vinculo, setVinculo] = useState({ brokerId: "", campaignId: "", deposit: "" });
   const [aporte, setAporte] = useState({ linkId: "", valor: "" });
 
@@ -83,7 +100,7 @@ function AdminPage() {
       const roleMap = new Map((roles ?? []).map((r) => [r.user_id, r.role as string]));
       return (profiles ?? []).map((p) => ({ ...p, role: roleMap.get(p.id) ?? "broker" }));
     },
-    enabled: isAdmin,
+    enabled: isStaff,
   });
 
   const mCriarUsuario = useMutation({
@@ -131,6 +148,62 @@ function AdminPage() {
       void queryClient.invalidateQueries({ queryKey: ["brokers"] });
     },
     onError: (e: Error) => toast.error("Erro ao cadastrar", { description: e.message }),
+  });
+
+  const mEditarCorretor = useMutation({
+    mutationFn: async () => {
+      if (!editandoCorretor) throw new Error("Nenhum corretor selecionado");
+      const { error } = await supabase
+        .from("brokers")
+        .update({
+          nome: editandoCorretor.nome.trim(),
+          email: editandoCorretor.email.trim() || null,
+          telefone: editandoCorretor.telefone.trim() || null,
+        })
+        .eq("id", editandoCorretor.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Corretor atualizado");
+      setEditandoCorretor(null);
+      void queryClient.invalidateQueries({ queryKey: ["brokers"] });
+      void queryClient.invalidateQueries({ queryKey: ["broker_campaigns"] });
+    },
+    onError: (e: Error) => toast.error("Erro ao atualizar", { description: e.message }),
+  });
+
+  const mExcluirCorretor = useMutation({
+    mutationFn: async () => {
+      if (!excluindoCorretor) throw new Error("Nenhum corretor selecionado");
+      const { data: vinculosCorretor, error: vErr } = await supabase
+        .from("broker_campaigns")
+        .select("id")
+        .eq("broker_id", excluindoCorretor.id);
+      if (vErr) throw vErr;
+      const ids = (vinculosCorretor ?? []).map((v) => v.id);
+      if (ids.length > 0) {
+        const { error: aErr } = await supabase.from("alerts").delete().in("broker_campaign_id", ids);
+        if (aErr) throw aErr;
+        const { error: sErr } = await supabase
+          .from("settlements")
+          .delete()
+          .in("broker_campaign_id", ids);
+        if (sErr) throw sErr;
+        const { error: bcErr } = await supabase.from("broker_campaigns").delete().in("id", ids);
+        if (bcErr) throw bcErr;
+      }
+      const { error } = await supabase.from("brokers").delete().eq("id", excluindoCorretor.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Corretor excluído");
+      setExcluindoCorretor(null);
+      void queryClient.invalidateQueries({ queryKey: ["brokers"] });
+      void queryClient.invalidateQueries({ queryKey: ["broker_campaigns"] });
+      void queryClient.invalidateQueries({ queryKey: ["settlements"] });
+      void queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    },
+    onError: (e: Error) => toast.error("Erro ao excluir", { description: e.message }),
   });
 
   const mVinculo = useMutation({
@@ -183,10 +256,10 @@ function AdminPage() {
     [links.data],
   );
 
-  if (!isAdmin) {
+  if (!isStaff) {
     return (
       <Card className="surface-card p-8 text-center text-muted-foreground">
-        Área restrita ao administrador da agência.
+        Área restrita à agência e ao dono da imobiliária.
       </Card>
     );
   }
@@ -373,6 +446,7 @@ function AdminPage() {
                   <TableHead>E-mail</TableHead>
                   <TableHead>Telefone</TableHead>
                   <TableHead>Login vinculado</TableHead>
+                  {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -388,11 +462,123 @@ function AdminPage() {
                         <span className="text-muted-foreground">sem login</span>
                       )}
                     </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setEditandoCorretor({
+                                id: b.id,
+                                nome: b.nome,
+                                email: b.email ?? "",
+                                telefone: b.telefone ?? "",
+                              })
+                            }
+                          >
+                            <Pencil className="h-3.5 w-3.5" /> Editar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setExcluindoCorretor({ id: b.id, nome: b.nome })}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Excluir
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </Card>
+
+          <Dialog
+            open={!!editandoCorretor}
+            onOpenChange={(o) => !o && setEditandoCorretor(null)}
+          >
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Editar corretor</DialogTitle>
+                <DialogDescription>
+                  Atualize os dados de contato do corretor cadastrado.
+                </DialogDescription>
+              </DialogHeader>
+              {editandoCorretor && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nome</Label>
+                    <Input
+                      value={editandoCorretor.nome}
+                      onChange={(e) =>
+                        setEditandoCorretor({ ...editandoCorretor, nome: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>E-mail</Label>
+                    <Input
+                      value={editandoCorretor.email}
+                      onChange={(e) =>
+                        setEditandoCorretor({ ...editandoCorretor, email: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefone</Label>
+                    <Input
+                      value={editandoCorretor.telefone}
+                      onChange={(e) =>
+                        setEditandoCorretor({ ...editandoCorretor, telefone: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditandoCorretor(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={() => mEditarCorretor.mutate()}
+                  disabled={mEditarCorretor.isPending || !editandoCorretor?.nome.trim()}
+                >
+                  Salvar alterações
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={!!excluindoCorretor}
+            onOpenChange={(o) => !o && setExcluindoCorretor(null)}
+          >
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Excluir corretor</DialogTitle>
+                <DialogDescription>
+                  {excluindoCorretor?.nome} será removido. Vínculos de campanha, aportes e acertos
+                  desse corretor também serão apagados.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setExcluindoCorretor(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => mExcluirCorretor.mutate()}
+                  disabled={mExcluirCorretor.isPending}
+                >
+                  Excluir definitivamente
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
         </TabsContent>
 
         <TabsContent value="vinculos" className="mt-4 space-y-4">
