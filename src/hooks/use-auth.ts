@@ -79,7 +79,14 @@ export function useAuthState(): AuthState {
   }, []);
 
   return useMemo(
-    () => ({ user, role, brokerIds, loading, isAdmin: role === "admin" }),
+    () => ({
+      user,
+      role,
+      brokerIds,
+      loading,
+      isAdmin: role === "admin",
+      isStaff: role === "admin" || role === "owner",
+    }),
     [user, role, brokerIds, loading],
   );
 }
