@@ -167,7 +167,7 @@ function CampanhasPage() {
     const rows = (campaigns.data ?? []).filter((c) => c.platform === platform);
     return (
       <Card className="surface-card overflow-x-auto p-0">
-        <Table>
+        <Table className="min-w-[880px]">
           <TableHeader>
             <TableRow>
               <TableHead>Campanha</TableHead>
@@ -273,7 +273,7 @@ function CampanhasPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Campanhas</h1>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Campanhas</h1>
         <p className="text-sm text-muted-foreground">
           Clique em uma campanha para ver o histórico detalhado
         </p>
@@ -300,7 +300,7 @@ function CampanhasPage() {
               Histórico diário de gasto, leads e cliques da campanha.
             </DialogDescription>
           </DialogHeader>
-          <div className="h-[300px] w-full">
+          <div className="h-[220px] w-full sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historico} margin={{ left: 4, right: 8, top: 8 }}>
                 <CartesianGrid stroke="var(--border)" strokeDasharray="4 4" vertical={false} />

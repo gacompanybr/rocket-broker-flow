@@ -99,7 +99,7 @@ function ConfiguracoesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Configurações</h1>
         <p className="text-sm text-muted-foreground">
           Site, conexões de integração e preferências de alerta
         </p>
@@ -141,11 +141,14 @@ function ConfiguracoesPage() {
           {metaLogs.slice(0, 6).map((l) => (
             <div
               key={l.id}
-              className="flex items-start justify-between gap-3 rounded-lg border border-border/60 px-3 py-2 text-xs"
+              className="flex flex-col gap-1 rounded-lg border border-border/60 px-3 py-2 text-xs sm:flex-row sm:items-start sm:justify-between sm:gap-3"
             >
-              <div>
+              <div className="min-w-0">
                 <span
-                  className={l.level === "error" ? "text-destructive" : "text-muted-foreground"}
+                  className={
+                    "break-words " +
+                    (l.level === "error" ? "text-destructive" : "text-muted-foreground")
+                  }
                 >
                   [{l.source}] {l.message}
                   {l.code ? ` (código ${l.code})` : ""}

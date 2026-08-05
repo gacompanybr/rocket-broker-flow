@@ -267,7 +267,7 @@ function AdminPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Admin</h1>
         <p className="text-sm text-muted-foreground">
           Usuários, corretores, vínculos de campanha e histórico de acertos
         </p>
@@ -348,7 +348,7 @@ function AdminPage() {
               </div>
             </div>
             <Button
-              className="mt-2 w-fit"
+              className="mt-2 w-full sm:w-fit"
               onClick={() => mCriarUsuario.mutate()}
               disabled={mCriarUsuario.isPending}
             >
@@ -357,7 +357,7 @@ function AdminPage() {
           </Card>
 
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
@@ -430,7 +430,7 @@ function AdminPage() {
               </div>
             </div>
             <Button
-              className="mt-2 w-fit"
+              className="mt-2 w-full sm:w-fit"
               onClick={() => mCorretor.mutate()}
               disabled={mCorretor.isPending || !novoCorretor.nome}
             >
@@ -439,7 +439,7 @@ function AdminPage() {
           </Card>
 
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Corretor</TableHead>
@@ -637,7 +637,7 @@ function AdminPage() {
                 </p>
               </div>
             </div>
-            <Button className="mt-2 w-fit" onClick={() => mVinculo.mutate()} disabled={mVinculo.isPending}>
+            <Button className="mt-2 w-full sm:w-fit" onClick={() => mVinculo.mutate()} disabled={mVinculo.isPending}>
               <Link2 className="h-4 w-4" /> Vincular
             </Button>
           </Card>
@@ -676,13 +676,13 @@ function AdminPage() {
                 />
               </div>
             </div>
-            <Button className="mt-2 w-fit" onClick={() => mAporte.mutate()} disabled={mAporte.isPending}>
+            <Button className="mt-2 w-full sm:w-fit" onClick={() => mAporte.mutate()} disabled={mAporte.isPending}>
               <Plus className="h-4 w-4" /> Registrar aporte
             </Button>
           </Card>
 
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Corretor</TableHead>
@@ -713,7 +713,7 @@ function AdminPage() {
 
         <TabsContent value="acertos" className="mt-4">
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>

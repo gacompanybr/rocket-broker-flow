@@ -125,7 +125,7 @@ function CorretoresPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Corretores</h1>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Corretores</h1>
         <p className="text-sm text-muted-foreground">
           Apenas campanhas com corretor vinculado · matching 1:1 entre aporte e verba da imobiliária
         </p>
@@ -158,9 +158,9 @@ function CorretoresPage() {
 
           return (
             <Card key={brokerId} className="surface-card gap-5 p-6">
-              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="rounded-lg bg-primary/10 p-2 text-primary">
+                  <span className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary">
                     <Users className="h-5 w-5" />
                   </span>
                   <div className="min-w-0">
@@ -170,7 +170,7 @@ function CorretoresPage() {
                     </p>
                   </div>
                 </div>
-                <span className="shrink-0 text-right text-sm">
+                <span className="shrink-0 text-sm sm:text-right">
                   <span className="block text-xs text-muted-foreground">Orçamento total</span>
                   <strong>{brl(orcamento)}</strong>
                 </span>
@@ -232,9 +232,9 @@ function CorretoresPage() {
                   const vAlerts = alertasPorVinculo.get(l.id) ?? [];
                   return (
                     <div key={l.id} className="rounded-lg border border-border/60 bg-background/40 p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                         <div className="min-w-0 flex-1 space-y-1.5">
-                          <p className="truncate text-sm font-medium">
+                          <p className="break-words text-sm font-medium">
                             {l.campaigns?.nome ?? "Campanha"}
                           </p>
                           <p className="text-xs leading-relaxed text-muted-foreground">
@@ -245,7 +245,7 @@ function CorretoresPage() {
                             {brl(Number(l.agency_match))}
                           </p>
                         </div>
-                        <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                           <StatusBadge status={st} />
                           {isAdmin && !l.finished_at && (
                             <Button size="sm" variant="outline" onClick={() => setFinalizando(l.id)}>
