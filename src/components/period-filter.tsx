@@ -17,7 +17,7 @@ type Props = {
 
 export function PeriodFilter({ preset, range, onChange }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
       {PRESETS.map((p) => (
         <Button
           key={p.id}
@@ -36,17 +36,17 @@ export function PeriodFilter({ preset, range, onChange }: Props) {
         Personalizado
       </Button>
       {preset === "custom" && (
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Input
             type="date"
-            className={cn("h-8 w-[150px]")}
+            className={cn("h-8 min-w-0 flex-1 sm:w-[150px] sm:flex-none")}
             value={range.from}
             onChange={(e) => onChange("custom", { ...range, from: e.target.value })}
           />
           <span className="text-muted-foreground text-sm">até</span>
           <Input
             type="date"
-            className="h-8 w-[150px]"
+            className="h-8 min-w-0 flex-1 sm:w-[150px] sm:flex-none"
             value={range.to}
             onChange={(e) => onChange("custom", { ...range, to: e.target.value })}
           />

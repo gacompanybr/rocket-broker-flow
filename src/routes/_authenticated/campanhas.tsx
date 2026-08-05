@@ -300,7 +300,7 @@ function CampanhasPage() {
               Histórico diário de gasto, leads e cliques da campanha.
             </DialogDescription>
           </DialogHeader>
-          <div className="h-[300px] w-full">
+          <div className="h-[220px] w-full sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historico} margin={{ left: 4, right: 8, top: 8 }}>
                 <CartesianGrid stroke="var(--border)" strokeDasharray="4 4" vertical={false} />
