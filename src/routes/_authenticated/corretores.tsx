@@ -125,7 +125,7 @@ function CorretoresPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Corretores</h1>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Corretores</h1>
         <p className="text-sm text-muted-foreground">
           Apenas campanhas com corretor vinculado · matching 1:1 entre aporte e verba da imobiliária
         </p>
