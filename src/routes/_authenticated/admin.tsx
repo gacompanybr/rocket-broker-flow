@@ -348,7 +348,7 @@ function AdminPage() {
               </div>
             </div>
             <Button
-              className="mt-2 w-fit"
+              className="mt-2 w-full sm:w-fit"
               onClick={() => mCriarUsuario.mutate()}
               disabled={mCriarUsuario.isPending}
             >
@@ -430,7 +430,7 @@ function AdminPage() {
               </div>
             </div>
             <Button
-              className="mt-2 w-fit"
+              className="mt-2 w-full sm:w-fit"
               onClick={() => mCorretor.mutate()}
               disabled={mCorretor.isPending || !novoCorretor.nome}
             >
@@ -637,7 +637,7 @@ function AdminPage() {
                 </p>
               </div>
             </div>
-            <Button className="mt-2 w-fit" onClick={() => mVinculo.mutate()} disabled={mVinculo.isPending}>
+            <Button className="mt-2 w-full sm:w-fit" onClick={() => mVinculo.mutate()} disabled={mVinculo.isPending}>
               <Link2 className="h-4 w-4" /> Vincular
             </Button>
           </Card>
@@ -676,7 +676,7 @@ function AdminPage() {
                 />
               </div>
             </div>
-            <Button className="mt-2 w-fit" onClick={() => mAporte.mutate()} disabled={mAporte.isPending}>
+            <Button className="mt-2 w-full sm:w-fit" onClick={() => mAporte.mutate()} disabled={mAporte.isPending}>
               <Plus className="h-4 w-4" /> Registrar aporte
             </Button>
           </Card>
