@@ -54,16 +54,16 @@ function AuthenticatedLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex min-h-screen w-full overflow-x-hidden bg-background">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur md:px-6">
-            <SidebarTrigger />
-            <span className="text-sm text-muted-foreground">
+          <header className="sticky top-0 z-20 flex h-14 min-w-0 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur md:px-6">
+            <SidebarTrigger className="shrink-0" />
+            <span className="truncate text-xs text-muted-foreground sm:text-sm">
               Painel de tráfego pago &amp; CRM
             </span>
           </header>
-          <main className="flex-1 p-3 md:p-6">
+          <main className="min-w-0 flex-1 overflow-x-hidden p-3 md:p-6">
             <Outlet />
           </main>
         </div>
