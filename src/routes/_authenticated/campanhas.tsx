@@ -167,7 +167,7 @@ function CampanhasPage() {
     const rows = (campaigns.data ?? []).filter((c) => c.platform === platform);
     return (
       <Card className="surface-card overflow-x-auto p-0">
-        <Table>
+        <Table className="min-w-[880px]">
           <TableHeader>
             <TableRow>
               <TableHead>Campanha</TableHead>

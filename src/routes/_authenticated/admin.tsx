@@ -357,7 +357,7 @@ function AdminPage() {
           </Card>
 
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
@@ -439,7 +439,7 @@ function AdminPage() {
           </Card>
 
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Corretor</TableHead>
@@ -682,7 +682,7 @@ function AdminPage() {
           </Card>
 
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Corretor</TableHead>
@@ -713,7 +713,7 @@ function AdminPage() {
 
         <TabsContent value="acertos" className="mt-4">
           <Card className="surface-card overflow-x-auto p-0">
-            <Table>
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
