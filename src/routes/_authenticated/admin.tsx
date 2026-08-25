@@ -251,10 +251,57 @@ function AdminPage() {
     onError: (e: Error) => toast.error("Erro no aporte", { description: e.message }),
   });
 
+  const mEditarVinculo = useMutation({
+    mutationFn: async () => {
+      if (!editandoVinculo) throw new Error("Nenhum vínculo selecionado");
+      const deposit = Number(editandoVinculo.deposit);
+      if (!editandoVinculo.campaignId || !deposit)
+        throw new Error("Selecione a campanha e informe o aporte");
+      const { error } = await supabase
+        .from("broker_campaigns")
+        .update({
+          campaign_id: editandoVinculo.campaignId,
+          broker_deposit: deposit,
+          agency_match: deposit,
+        })
+        .eq("id", editandoVinculo.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Vínculo atualizado");
+      setEditandoVinculo(null);
+      void queryClient.invalidateQueries({ queryKey: ["broker_campaigns"] });
+    },
+    onError: (e: Error) => toast.error("Erro ao atualizar vínculo", { description: e.message }),
+  });
+
+  const mExcluirVinculo = useMutation({
+    mutationFn: async () => {
+      if (!excluindoVinculo) throw new Error("Nenhum vínculo selecionado");
+      const id = excluindoVinculo.id;
+      const { error: aErr } = await supabase.from("alerts").delete().eq("broker_campaign_id", id);
+      if (aErr) throw aErr;
+      const { error: sErr } = await supabase
+        .from("settlements")
+        .delete()
+        .eq("broker_campaign_id", id);
+      if (sErr) throw sErr;
+      const { error } = await supabase.from("broker_campaigns").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Vínculo removido");
+      setExcluindoVinculo(null);
+      void queryClient.invalidateQueries({ queryKey: ["broker_campaigns"] });
+    },
+    onError: (e: Error) => toast.error("Erro ao remover vínculo", { description: e.message }),
+  });
+
   const vinculosAtivos = useMemo(
     () => (links.data ?? []).filter((l) => !l.finished_at),
     [links.data],
   );
+
 
   if (!isStaff) {
     return (
