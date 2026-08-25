@@ -87,6 +87,16 @@ function AdminPage() {
   );
   const [vinculo, setVinculo] = useState({ brokerId: "", campaignId: "", deposit: "" });
   const [aporte, setAporte] = useState({ linkId: "", valor: "" });
+  const [editandoVinculo, setEditandoVinculo] = useState<{
+    id: string;
+    brokerNome: string;
+    campaignId: string;
+    deposit: string;
+  } | null>(null);
+  const [excluindoVinculo, setExcluindoVinculo] = useState<{ id: string; label: string } | null>(
+    null,
+  );
+
 
   const usuarios = useQuery({
     queryKey: ["admin_users"],
