@@ -739,7 +739,7 @@ function AdminPage() {
           </Card>
 
           <Card className="surface-card overflow-x-auto p-0">
-            <Table className="min-w-[700px]">
+            <Table className="min-w-[820px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Corretor</TableHead>
@@ -748,25 +748,147 @@ function AdminPage() {
                   <TableHead className="text-right">Contrapartida</TableHead>
                   <TableHead className="text-right">Orçamento</TableHead>
                   <TableHead>Status</TableHead>
+                  {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(links.data ?? []).map((l) => (
                   <TableRow key={l.id}>
                     <TableCell className="font-medium">{l.brokers?.nome}</TableCell>
-                    <TableCell>{l.campaigns?.nome}</TableCell>
+                    <TableCell>{l.campaigns?.nome ?? "— campanha removida —"}</TableCell>
                     <TableCell className="text-right">{brl(Number(l.broker_deposit))}</TableCell>
                     <TableCell className="text-right">{brl(Number(l.agency_match))}</TableCell>
                     <TableCell className="text-right">{brl(Number(l.total_budget ?? 0))}</TableCell>
                     <TableCell>
                       <StatusBadge status={l.status} />
                     </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setEditandoVinculo({
+                                id: l.id,
+                                brokerNome: l.brokers?.nome ?? "",
+                                campaignId: l.campaign_id,
+                                deposit: String(l.broker_deposit ?? ""),
+                              })
+                            }
+                          >
+                            <Pencil className="h-3.5 w-3.5" /> Trocar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setExcluindoVinculo({
+                                id: l.id,
+                                label: `${l.brokers?.nome ?? ""} · ${l.campaigns?.nome ?? "campanha removida"}`,
+                              })
+                            }
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </Card>
+
+          <Dialog
+            open={!!editandoVinculo}
+            onOpenChange={(o) => !o && setEditandoVinculo(null)}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Trocar campanha do vínculo</DialogTitle>
+                <DialogDescription>
+                  Corretor: {editandoVinculo?.brokerNome}. O histórico de aportes e o acerto seguem
+                  neste mesmo vínculo.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Nova campanha</Label>
+                  <Select
+                    value={editandoVinculo?.campaignId ?? ""}
+                    onValueChange={(v) =>
+                      setEditandoVinculo((prev) => (prev ? { ...prev, campaignId: v } : prev))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(campaigns.data ?? []).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Aporte do corretor (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={editandoVinculo?.deposit ?? ""}
+                    onChange={(e) =>
+                      setEditandoVinculo((prev) =>
+                        prev ? { ...prev, deposit: e.target.value } : prev,
+                      )
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    A imobiliária cobre o mesmo valor (matching 1:1).
+                  </p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditandoVinculo(null)}>
+                  Cancelar
+                </Button>
+                <Button onClick={() => mEditarVinculo.mutate()} disabled={mEditarVinculo.isPending}>
+                  Salvar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={!!excluindoVinculo}
+            onOpenChange={(o) => !o && setExcluindoVinculo(null)}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Remover vínculo</DialogTitle>
+                <DialogDescription>
+                  {excluindoVinculo?.label} será removido, junto com alertas e acertos deste
+                  vínculo. Essa ação não pode ser desfeita.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setExcluindoVinculo(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => mExcluirVinculo.mutate()}
+                  disabled={mExcluirVinculo.isPending}
+                >
+                  Remover
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
+
 
         <TabsContent value="acertos" className="mt-4">
           <Card className="surface-card overflow-x-auto p-0">
