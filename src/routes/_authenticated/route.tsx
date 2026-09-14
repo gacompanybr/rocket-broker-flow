@@ -27,7 +27,10 @@ function AuthenticatedLayout() {
       timers.set(
         key,
         setTimeout(() => {
-          void queryClient.invalidateQueries({ queryKey: [key] });
+          void queryClient.invalidateQueries({
+            queryKey: [key],
+            refetchType: "active",
+          });
         }, 800),
       );
     };
@@ -35,13 +38,16 @@ function AuthenticatedLayout() {
     const channel = supabase
       .channel("dashboard-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "campaign_metrics" }, () =>
-        invalidate("campaign_metrics"),
+        ["campaign_metrics", "campaign_metrics_summary", "campaign_metrics_daily"].forEach(invalidate),
       )
       .on("postgres_changes", { event: "*", schema: "public", table: "broker_campaigns" }, () =>
         invalidate("broker_campaigns"),
       )
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () =>
         invalidate("alerts"),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "meta_ads" }, () =>
+        invalidate("meta_ads"),
       )
       .subscribe();
 

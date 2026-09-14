@@ -246,6 +246,86 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_ads: {
+        Row: {
+          adset_external_id: string | null
+          adset_name: string | null
+          body: string | null
+          campaign_id: string
+          created_at: string
+          created_time: string | null
+          creative_external_id: string | null
+          effective_status: string | null
+          external_id: string
+          id: string
+          image_url: string | null
+          last_synced_at: string
+          link_url: string | null
+          media_type: string
+          nome: string
+          source_story_id: string | null
+          status: string
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string
+          video_id: string | null
+        }
+        Insert: {
+          adset_external_id?: string | null
+          adset_name?: string | null
+          body?: string | null
+          campaign_id: string
+          created_at?: string
+          created_time?: string | null
+          creative_external_id?: string | null
+          effective_status?: string | null
+          external_id: string
+          id?: string
+          image_url?: string | null
+          last_synced_at?: string
+          link_url?: string | null
+          media_type?: string
+          nome: string
+          source_story_id?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+          video_id?: string | null
+        }
+        Update: {
+          adset_external_id?: string | null
+          adset_name?: string | null
+          body?: string | null
+          campaign_id?: string
+          created_at?: string
+          created_time?: string | null
+          creative_external_id?: string | null
+          effective_status?: string | null
+          external_id?: string
+          id?: string
+          image_url?: string | null
+          last_synced_at?: string
+          link_url?: string | null
+          media_type?: string
+          nome?: string
+          source_story_id?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meta_ads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -439,6 +519,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      campaign_metrics_daily: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          campaign_id: string
+          date: string
+          leads: number
+          spend: number
+        }[]
+      }
+      campaign_metrics_summary: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          campaign_id: string
+          clicks: number
+          impressions: number
+          leads: number
+          reach: number
+          spend: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

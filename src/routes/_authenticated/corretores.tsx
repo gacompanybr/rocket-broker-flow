@@ -35,6 +35,8 @@ export const Route = createFileRoute("/_authenticated/corretores")({
         property: "og:description",
         content: "Controle do matching 1:1 entre aporte do corretor e verba da imobiliária.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CorretoresPage,

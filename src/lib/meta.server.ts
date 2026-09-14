@@ -122,6 +122,38 @@ type MetaInsight = {
   actions?: { action_type: string; value: string }[];
 };
 
+type MetaAd = {
+  id: string;
+  name: string;
+  status?: string;
+  effective_status?: string;
+  created_time?: string;
+  campaign_id?: string;
+  adset_id?: string;
+  campaign?: { id?: string };
+  adset?: { id?: string; name?: string };
+  creative?: { id?: string };
+};
+
+type MetaCreative = {
+  id?: string;
+  thumbnail_url?: string;
+  image_url?: string;
+  body?: string;
+  title?: string;
+  effective_object_story_id?: string;
+  object_story_spec?: {
+    link_data?: { image_hash?: string; link?: string; message?: string; name?: string };
+    video_data?: {
+      video_id?: string;
+      image_url?: string;
+      message?: string;
+      title?: string;
+      call_to_action?: { value?: { link?: string } };
+    };
+  };
+};
+
 const MESSAGING_ACTION = "onsite_conversion.messaging_conversation_started_7d";
 
 function extractLeads(actions: MetaInsight["actions"]) {
@@ -225,9 +257,111 @@ export async function syncMetaCampaigns(admin: Admin) {
     rows += 1;
   }
 
+  const ads = await syncMetaAds(admin, idByExternal, token, adAccountId);
+
   const budget = await checkBudgets(admin);
 
-  return { campanhas: remote.length, metricas: rows, firstSync, ...budget };
+  return { campanhas: remote.length, metricas: rows, anuncios: ads, firstSync, ...budget };
+}
+
+/** Sincroniza anúncios e os dados visuais essenciais de seus criativos. */
+export async function syncMetaAds(
+  admin: Admin,
+  campaignIdByExternal?: Map<string, string>,
+  accessToken?: string,
+  accountId?: string,
+) {
+  const env = metaEnv();
+  const token = accessToken ?? env.token;
+  const adAccountId = accountId ?? env.adAccountId;
+  let idByExternal = campaignIdByExternal;
+  if (!idByExternal) {
+    const { data: localCampaigns } = await admin
+      .from("campaigns")
+      .select("id, external_id")
+      .eq("platform", "meta");
+    idByExternal = new Map((localCampaigns ?? []).map((c) => [c.external_id, c.id]));
+  }
+
+  const fields = [
+    "id",
+    "name",
+    "status",
+    "effective_status",
+    "created_time",
+    "campaign_id",
+    "adset_id",
+    "creative{id}",
+  ].join(",");
+  const url = `${META_GRAPH}/${adAccountId}/ads?fields=${encodeURIComponent(fields)}&limit=100&access_token=${encodeURIComponent(token)}`;
+  const remoteAds = await graphAll<MetaAd>(url);
+  const creativeIds = [...new Set(remoteAds.map((ad) => ad.creative?.id).filter((id): id is string => Boolean(id)))];
+  const creativeById = new Map<string, MetaCreative>();
+  for (let offset = 0; offset < creativeIds.length; offset += 8) {
+    const batch = creativeIds.slice(offset, offset + 8);
+    const creatives = await Promise.all(
+      batch.map((id) =>
+        graph<MetaCreative>(
+          `${META_GRAPH}/${id}?fields=thumbnail_url,image_url,body,title,effective_object_story_id,object_story_spec&access_token=${encodeURIComponent(token)}`,
+        ).catch(() => ({ id })),
+      ),
+    );
+    creatives.forEach((creative, index) => creativeById.set(batch[index], creative));
+  }
+  const syncedAt = new Date().toISOString();
+  const seen: string[] = [];
+
+  for (const ad of remoteAds) {
+    const campaignId = idByExternal.get(ad.campaign_id ?? ad.campaign?.id ?? "");
+    if (!campaignId) continue;
+    const creative = creativeById.get(ad.creative?.id ?? "");
+    const story = creative?.object_story_spec;
+    const video = story?.video_data;
+    const link = story?.link_data;
+    const mediaType = video?.video_id ? "video" : link?.image_hash || creative?.image_url ? "image" : "unknown";
+    const effective = (ad.effective_status ?? ad.status ?? "UNKNOWN").toUpperCase();
+    await admin.from("meta_ads").upsert(
+      {
+        external_id: ad.id,
+        campaign_id: campaignId,
+        adset_external_id: ad.adset_id ?? ad.adset?.id ?? null,
+        adset_name: ad.adset?.name ?? null,
+        nome: ad.name,
+        status: effective === "ACTIVE" ? "active" : "paused",
+        effective_status: effective,
+        creative_external_id: creative?.id ?? ad.creative?.id ?? null,
+        media_type: mediaType,
+        thumbnail_url: creative?.thumbnail_url ?? video?.image_url ?? creative?.image_url ?? null,
+        image_url: creative?.image_url ?? video?.image_url ?? null,
+        video_id: video?.video_id ?? null,
+        body: creative?.body ?? video?.message ?? link?.message ?? null,
+        title: creative?.title ?? video?.title ?? link?.name ?? null,
+        link_url: video?.call_to_action?.value?.link ?? link?.link ?? null,
+        source_story_id: creative?.effective_object_story_id ?? null,
+        created_time: ad.created_time ? new Date(ad.created_time).toISOString() : null,
+        last_synced_at: syncedAt,
+      },
+      { onConflict: "external_id" },
+    );
+    seen.push(ad.id);
+  }
+
+  if (seen.length) {
+    await admin
+      .from("meta_ads")
+      .update({ status: "paused", effective_status: "NOT_DELIVERING", last_synced_at: syncedAt })
+      .not("external_id", "in", `(${seen.join(",")})`);
+  }
+  return { sincronizados: seen.length, ativos: remoteAds.filter((a) => a.effective_status === "ACTIVE").length };
+}
+
+/** Resolve a fonte atual de um vídeo apenas quando a prévia é aberta. */
+export async function getMetaVideoSource(videoId: string) {
+  const { token } = metaEnv();
+  const video = await graph<{ source?: string; picture?: string }>(
+    `${META_GRAPH}/${encodeURIComponent(videoId)}?fields=source,picture&access_token=${encodeURIComponent(token)}`,
+  );
+  return { source: video.source ?? null, picture: video.picture ?? null };
 }
 
 /** Reavalia consumo de verba dos vínculos e emite alertas sem duplicar. */

@@ -46,6 +46,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
         property: "og:description",
         content: "Crie logins, cadastre corretores e vincule campanhas com matching 1:1.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminPage,
