@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Pause, Play, Wallet } from "lucide-react";
+import { Pause, Play, Search, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,9 +28,17 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/status-badge";
+import { AdCreativeCard } from "@/components/ad-creative-card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useAllCampaignMetrics, useBrokerCampaigns, useCampaigns } from "@/lib/data";
+import {
+  todayISO,
+  useBrokerCampaigns,
+  useCampaignHistory,
+  useCampaignMetricSummary,
+  useCampaigns,
+  useMetaAds,
+} from "@/lib/data";
 import { brl, dayLabel, num } from "@/lib/format";
 import { metaCampaignAction } from "@/lib/meta.functions";
 
@@ -55,13 +63,17 @@ export const Route = createFileRoute("/_authenticated/campanhas")({
 function CampanhasPage() {
   const { isAdmin } = useAuth();
   const campaigns = useCampaigns();
-  const metrics = useAllCampaignMetrics();
+  const metrics = useCampaignMetricSummary({ from: "2026-06-30", to: todayISO() });
   const links = useBrokerCampaigns();
   const queryClient = useQueryClient();
   const acaoMeta = useServerFn(metaCampaignAction);
   const [detalhe, setDetalhe] = useState<string | null>(null);
   const [orcamentoAberto, setOrcamentoAberto] = useState<string | null>(null);
   const [novoOrcamento, setNovoOrcamento] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"active" | "paused" | "all">("active");
+  const [search, setSearch] = useState("");
+  const history = useCampaignHistory(detalhe);
+  const ads = useMetaAds({ campaignId: detalhe, activeOnly: true });
 
   const totaisPorCampanha = useMemo(() => {
     const map = new Map<
@@ -149,25 +161,64 @@ function CampanhasPage() {
 
   const historico = useMemo(
     () =>
-      (metrics.data ?? [])
-        .filter((m) => m.campaign_id === detalhe)
-        .map((m) => ({
+      (history.data ?? []).map((m) => ({
           date: m.date,
           gasto: Number(m.spend),
           leads: Number(m.leads),
           cliques: Number(m.clicks),
         })),
-    [metrics.data, detalhe],
+    [history.data],
   );
 
   const campanhaDetalhe = campaigns.data?.find((c) => c.id === detalhe);
   const campanhaOrcamento = campaigns.data?.find((c) => c.id === orcamentoAberto);
 
   const renderTabela = (platform: "meta" | "google") => {
-    const rows = (campaigns.data ?? []).filter((c) => c.platform === platform);
+    const normalizedSearch = search.trim().toLocaleLowerCase("pt-BR");
+    const rows = (campaigns.data ?? []).filter(
+      (c) =>
+        c.platform === platform &&
+        (statusFilter === "all" || c.status === statusFilter) &&
+        (!normalizedSearch || c.nome.toLocaleLowerCase("pt-BR").includes(normalizedSearch)),
+    );
     return (
-      <Card className="surface-card overflow-x-auto p-0">
-        <Table className="min-w-[880px]">
+      <>
+        <div className="grid gap-3 md:flex md:items-center md:justify-between">
+          <div className="flex w-full gap-1 overflow-x-auto rounded-md border bg-card p-1 md:w-auto">
+            {(["active", "paused", "all"] as const).map((value) => (
+              <Button key={value} size="sm" variant={statusFilter === value ? "default" : "ghost"} onClick={() => setStatusFilter(value)}>
+                {value === "active" ? "Ativas" : value === "paused" ? "Pausadas" : "Todas"}
+              </Button>
+            ))}
+          </div>
+          <div className="relative w-full md:max-w-xs">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar campanha" className="pl-9" />
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:hidden">
+          {rows.map((c) => {
+            const t = totaisPorCampanha.get(c.id);
+            const cpl = t && t.leads > 0 ? Number(t.spend) / Number(t.leads) : 0;
+            return (
+              <Card key={c.id} className="surface-card gap-3 p-4" onClick={() => setDetalhe(c.id)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0"><h3 className="line-clamp-2 text-sm font-semibold">{c.nome}</h3><p className="truncate text-xs text-muted-foreground">{c.objetivo ?? "Meta Ads"}</p></div>
+                  <StatusBadge status={c.status} />
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div><span className="block text-muted-foreground">Gasto</span><strong>{brl(Number(t?.spend ?? 0))}</strong></div>
+                  <div><span className="block text-muted-foreground">Leads</span><strong>{num(Number(t?.leads ?? 0))}</strong></div>
+                  <div><span className="block text-muted-foreground">CPL</span><strong>{brl(cpl)}</strong></div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+
+        <Card className="surface-card hidden overflow-x-auto p-0 md:block">
+          <Table className="min-w-[880px]">
           <TableHeader>
             <TableRow>
               <TableHead>Campanha</TableHead>
@@ -266,7 +317,9 @@ function CampanhasPage() {
             )}
           </TableBody>
         </Table>
-      </Card>
+        </Card>
+        {rows.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma campanha encontrada.</p>}
+      </>
     );
   };
 
@@ -285,10 +338,10 @@ function CampanhasPage() {
           <TabsTrigger value="google">Google</TabsTrigger>
         </TabsList>
         <TabsContent value="meta" className="mt-4">
-          {renderTabela("meta")}
+          <div className="space-y-4">{renderTabela("meta")}</div>
         </TabsContent>
         <TabsContent value="google" className="mt-4">
-          {renderTabela("google")}
+          <div className="space-y-4">{renderTabela("google")}</div>
         </TabsContent>
       </Tabs>
 
@@ -296,9 +349,7 @@ function CampanhasPage() {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>{campanhaDetalhe?.nome}</DialogTitle>
-            <DialogDescription>
-              Histórico diário de gasto, leads e cliques da campanha.
-            </DialogDescription>
+            <DialogDescription>Histórico e criativos ativos da campanha.</DialogDescription>
           </DialogHeader>
           <div className="h-[220px] w-full sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -324,6 +375,13 @@ function CampanhasPage() {
                 <Line type="monotone" dataKey="cliques" stroke="var(--chart-3)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Anúncios ativos</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(ads.data ?? []).map((ad) => <AdCreativeCard key={ad.id} ad={ad} campaignName={campanhaDetalhe?.nome} />)}
+              {!ads.isLoading && ads.data?.length === 0 && <p className="text-sm text-muted-foreground">Nenhum criativo ativo nesta campanha.</p>}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
