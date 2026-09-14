@@ -128,6 +128,8 @@ type MetaAd = {
   status?: string;
   effective_status?: string;
   created_time?: string;
+  campaign_id?: string;
+  adset_id?: string;
   campaign?: { id?: string };
   adset?: { id?: string; name?: string };
   creative?: { id?: string };
@@ -287,8 +289,8 @@ export async function syncMetaAds(
     "status",
     "effective_status",
     "created_time",
-    "campaign{id}",
-    "adset{id,name}",
+    "campaign_id",
+    "adset_id",
     "creative{id}",
   ].join(",");
   const url = `${META_GRAPH}/${adAccountId}/ads?fields=${encodeURIComponent(fields)}&limit=100&access_token=${encodeURIComponent(token)}`;
@@ -310,7 +312,7 @@ export async function syncMetaAds(
   const seen: string[] = [];
 
   for (const ad of remoteAds) {
-    const campaignId = idByExternal.get(ad.campaign?.id ?? "");
+    const campaignId = idByExternal.get(ad.campaign_id ?? ad.campaign?.id ?? "");
     if (!campaignId) continue;
     const creative = creativeById.get(ad.creative?.id ?? "");
     const story = creative?.object_story_spec;
@@ -322,7 +324,7 @@ export async function syncMetaAds(
       {
         external_id: ad.id,
         campaign_id: campaignId,
-        adset_external_id: ad.adset?.id ?? null,
+        adset_external_id: ad.adset_id ?? ad.adset?.id ?? null,
         adset_name: ad.adset?.name ?? null,
         nome: ad.name,
         status: effective === "ACTIVE" ? "active" : "paused",
