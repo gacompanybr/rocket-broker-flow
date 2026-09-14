@@ -52,6 +52,8 @@ export function AdCreativeCard({ ad, campaignName }: { ad: AdCreative; campaignN
             <img
               src={thumbnail}
               alt={`Prévia do anúncio ${ad.nome}`}
+              width={640}
+              height={360}
               loading="lazy"
               decoding="async"
               fetchPriority="low"
