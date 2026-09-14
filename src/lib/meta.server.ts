@@ -130,22 +130,24 @@ type MetaAd = {
   created_time?: string;
   campaign?: { id?: string };
   adset?: { id?: string; name?: string };
-  creative?: {
-    id?: string;
-    thumbnail_url?: string;
-    image_url?: string;
-    body?: string;
-    title?: string;
-    effective_object_story_id?: string;
-    object_story_spec?: {
-      link_data?: { image_hash?: string; link?: string; message?: string; name?: string };
-      video_data?: {
-        video_id?: string;
-        image_url?: string;
-        message?: string;
-        title?: string;
-        call_to_action?: { value?: { link?: string } };
-      };
+  creative?: { id?: string };
+};
+
+type MetaCreative = {
+  id?: string;
+  thumbnail_url?: string;
+  image_url?: string;
+  body?: string;
+  title?: string;
+  effective_object_story_id?: string;
+  object_story_spec?: {
+    link_data?: { image_hash?: string; link?: string; message?: string; name?: string };
+    video_data?: {
+      video_id?: string;
+      image_url?: string;
+      message?: string;
+      title?: string;
+      call_to_action?: { value?: { link?: string } };
     };
   };
 };
@@ -287,20 +289,34 @@ export async function syncMetaAds(
     "created_time",
     "campaign{id}",
     "adset{id,name}",
-    "creative{id,thumbnail_url,image_url,body,title,effective_object_story_id,object_story_spec}",
+    "creative{id}",
   ].join(",");
   const url = `${META_GRAPH}/${adAccountId}/ads?fields=${encodeURIComponent(fields)}&limit=100&access_token=${encodeURIComponent(token)}`;
   const remoteAds = await graphAll<MetaAd>(url);
+  const creativeIds = [...new Set(remoteAds.map((ad) => ad.creative?.id).filter((id): id is string => Boolean(id)))];
+  const creativeById = new Map<string, MetaCreative>();
+  for (let offset = 0; offset < creativeIds.length; offset += 8) {
+    const batch = creativeIds.slice(offset, offset + 8);
+    const creatives = await Promise.all(
+      batch.map((id) =>
+        graph<MetaCreative>(
+          `${META_GRAPH}/${id}?fields=thumbnail_url,image_url,body,title,effective_object_story_id,object_story_spec&access_token=${encodeURIComponent(token)}`,
+        ).catch(() => ({ id })),
+      ),
+    );
+    creatives.forEach((creative, index) => creativeById.set(batch[index], creative));
+  }
   const syncedAt = new Date().toISOString();
   const seen: string[] = [];
 
   for (const ad of remoteAds) {
     const campaignId = idByExternal.get(ad.campaign?.id ?? "");
     if (!campaignId) continue;
-    const story = ad.creative?.object_story_spec;
+    const creative = creativeById.get(ad.creative?.id ?? "");
+    const story = creative?.object_story_spec;
     const video = story?.video_data;
     const link = story?.link_data;
-    const mediaType = video?.video_id ? "video" : link?.image_hash || ad.creative?.image_url ? "image" : "unknown";
+    const mediaType = video?.video_id ? "video" : link?.image_hash || creative?.image_url ? "image" : "unknown";
     const effective = (ad.effective_status ?? ad.status ?? "UNKNOWN").toUpperCase();
     await admin.from("meta_ads").upsert(
       {
@@ -311,15 +327,15 @@ export async function syncMetaAds(
         nome: ad.name,
         status: effective === "ACTIVE" ? "active" : "paused",
         effective_status: effective,
-        creative_external_id: ad.creative?.id ?? null,
+        creative_external_id: creative?.id ?? ad.creative?.id ?? null,
         media_type: mediaType,
-        thumbnail_url: ad.creative?.thumbnail_url ?? video?.image_url ?? ad.creative?.image_url ?? null,
-        image_url: ad.creative?.image_url ?? video?.image_url ?? null,
+        thumbnail_url: creative?.thumbnail_url ?? video?.image_url ?? creative?.image_url ?? null,
+        image_url: creative?.image_url ?? video?.image_url ?? null,
         video_id: video?.video_id ?? null,
-        body: ad.creative?.body ?? video?.message ?? link?.message ?? null,
-        title: ad.creative?.title ?? video?.title ?? link?.name ?? null,
+        body: creative?.body ?? video?.message ?? link?.message ?? null,
+        title: creative?.title ?? video?.title ?? link?.name ?? null,
         link_url: video?.call_to_action?.value?.link ?? link?.link ?? null,
-        source_story_id: ad.creative?.effective_object_story_id ?? null,
+        source_story_id: creative?.effective_object_story_id ?? null,
         created_time: ad.created_time ? new Date(ad.created_time).toISOString() : null,
         last_synced_at: syncedAt,
       },
