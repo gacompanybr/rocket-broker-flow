@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/kpi-card";
 import { AdCreativeCard } from "@/components/ad-creative-card";
+import { StatusBadge } from "@/components/status-badge";
 import { PeriodFilter } from "@/components/period-filter";
 import {
   previousRange,
@@ -136,6 +137,10 @@ function DashboardPage() {
 
   const totals = useMemo(() => sumMetrics(rows), [rows]);
   const totalsPrev = useMemo(() => sumMetrics(rowsPrev), [rowsPrev]);
+  const totalsPorCampaign = useMemo(
+    () => new Map((metrics.data ?? []).map((row) => [row.campaign_id, row])),
+    [metrics.data],
+  );
 
   const series = useMemo(() => {
     const byDate = new Map<string, { date: string; gasto: number; leads: number }>();
