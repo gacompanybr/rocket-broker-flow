@@ -1,16 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Pause, Play, Search, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -28,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/status-badge";
-import { AdCreativeCard } from "@/components/ad-creative-card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -41,6 +31,8 @@ import {
 } from "@/lib/data";
 import { brl, dayLabel, num } from "@/lib/format";
 import { metaCampaignAction } from "@/lib/meta.functions";
+
+const CampaignDetailDialog = lazy(() => import("@/components/campaign-detail-dialog"));
 
 export const Route = createFileRoute("/_authenticated/campanhas")({
   head: () => ({
@@ -347,46 +339,18 @@ function CampanhasPage() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detalhe} onOpenChange={(o) => !o && setDetalhe(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{campanhaDetalhe?.nome}</DialogTitle>
-            <DialogDescription>Histórico e criativos ativos da campanha.</DialogDescription>
-          </DialogHeader>
-          <div className="h-[220px] w-full sm:h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={historico} margin={{ left: 4, right: 8, top: 8 }}>
-                <CartesianGrid stroke="var(--border)" strokeDasharray="4 4" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={dayLabel}
-                  stroke="var(--muted-foreground)"
-                  fontSize={12}
-                />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                  }}
-                  labelFormatter={(v) => dayLabel(String(v))}
-                />
-                <Line type="monotone" dataKey="gasto" stroke="var(--chart-1)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="leads" stroke="var(--chart-2)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="cliques" stroke="var(--chart-3)" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">Anúncios ativos</h3>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {(ads.data ?? []).map((ad) => <AdCreativeCard key={ad.id} ad={ad} campaignName={campanhaDetalhe?.nome} />)}
-              {!ads.isLoading && ads.data?.length === 0 && <p className="text-sm text-muted-foreground">Nenhum criativo ativo nesta campanha.</p>}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {detalhe && (
+        <Suspense fallback={null}>
+          <CampaignDetailDialog
+            open
+            onOpenChange={(open) => !open && setDetalhe(null)}
+            campaignName={campanhaDetalhe?.nome}
+            history={historico}
+            ads={ads.data ?? []}
+            adsLoading={ads.isLoading}
+          />
+        </Suspense>
+      )}
 
       <Dialog open={!!orcamentoAberto} onOpenChange={(o) => !o && setOrcamentoAberto(null)}>
         <DialogContent className="max-w-sm">
