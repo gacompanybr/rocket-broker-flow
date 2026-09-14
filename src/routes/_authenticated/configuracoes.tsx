@@ -27,6 +27,8 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
         property: "og:description",
         content: "Cadastre IDs de integração e defina o limiar de alerta de orçamento.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ConfiguracoesPage,

@@ -55,6 +55,8 @@ export const Route = createFileRoute("/_authenticated/campanhas")({
         property: "og:description",
         content: "Acompanhe e gerencie as campanhas de tráfego pago da imobiliária.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CampanhasPage,

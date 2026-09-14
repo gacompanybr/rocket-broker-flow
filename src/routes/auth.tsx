@@ -28,6 +28,8 @@ export const Route = createFileRoute("/auth")({
         content:
           "Dashboard interativo de campanhas e performance da imobiliária OArco.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,

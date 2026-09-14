@@ -10,7 +10,7 @@ export type CampaignActionInput = {
 /** Ação administrativa direto no Meta (pausar/ativar ou mudar orçamento diário). */
 export const metaCampaignAction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: CampaignActionInput) => {
+  .validator((input: CampaignActionInput) => {
     if (!input?.externalId) throw new Error("Campanha inválida");
     if (input.status && !["ACTIVE", "PAUSED"].includes(input.status))
       throw new Error("Status inválido");
@@ -58,7 +58,7 @@ export const metaCampaignAction = createServerFn({ method: "POST" })
 /** Dispara manualmente as syncs do Meta (somente admin). */
 export const runMetaSync = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { social?: boolean } | undefined) => input ?? {})
+  .validator((input: { social?: boolean } | undefined) => input ?? {})
   .handler(async ({ data, context }) => {
     const { data: isAdmin, error } = await context.supabase.rpc("is_admin");
     if (error) throw new Error(error.message);
@@ -75,7 +75,7 @@ export const runMetaSync = createServerFn({ method: "POST" })
 
 export const getMetaVideoPreview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { videoId: string }) => {
+  .validator((input: { videoId: string }) => {
     if (!input?.videoId) throw new Error("Vídeo inválido");
     return input;
   })
