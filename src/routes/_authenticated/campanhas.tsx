@@ -75,7 +75,7 @@ function CampanhasPage() {
   const [statusFilter, setStatusFilter] = useState<"active" | "paused" | "all">("active");
   const [search, setSearch] = useState("");
   const history = useCampaignHistory(detalhe);
-  const ads = useMetaAds({ campaignId: detalhe, activeOnly: true });
+  const ads = useMetaAds({ campaignId: detalhe, activeOnly: true, enabled: Boolean(detalhe) });
 
   const totaisPorCampanha = useMemo(() => {
     const map = new Map<

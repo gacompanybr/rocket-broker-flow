@@ -53,6 +53,8 @@ export function AdCreativeCard({ ad, campaignName }: { ad: AdCreative; campaignN
               src={thumbnail}
               alt={`Prévia do anúncio ${ad.nome}`}
               loading="lazy"
+              decoding="async"
+              fetchPriority="low"
               referrerPolicy="no-referrer"
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
