@@ -33,10 +33,11 @@ export function previousRange(range: Range): Range {
 export function useCampaigns() {
   return useQuery({
     queryKey: ["campaigns"],
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaigns")
-        .select("*")
+        .select("id, external_id, platform, nome, status, objetivo, daily_budget, criada_em")
         .order("criada_em", { ascending: false });
       if (error) throw error;
       return data;
@@ -119,18 +120,27 @@ export function useCampaignHistory(campaignId: string | null) {
   });
 }
 
-export function useMetaAds(options?: { campaignId?: string | null; activeOnly?: boolean }) {
+export function useMetaAds(options?: {
+  campaignId?: string | null;
+  activeOnly?: boolean;
+  enabled?: boolean;
+  limit?: number;
+}) {
   const campaignId = options?.campaignId ?? null;
   const activeOnly = options?.activeOnly ?? false;
+  const limit = options?.limit;
   return useQuery({
-    queryKey: ["meta_ads", campaignId ?? "all", activeOnly ? "active" : "all"],
+    queryKey: ["meta_ads", campaignId ?? "all", activeOnly ? "active" : "all", limit ?? "all"],
+    enabled: options?.enabled ?? true,
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       let query = supabase
         .from("meta_ads")
-        .select("id, external_id, campaign_id, adset_name, nome, status, effective_status, media_type, thumbnail_url, image_url, video_id, body, title, link_url, last_synced_at")
+        .select("id, campaign_id, adset_name, nome, effective_status, media_type, thumbnail_url, image_url, video_id, body, title, link_url")
         .order("updated_at", { ascending: false });
       if (campaignId) query = query.eq("campaign_id", campaignId);
       if (activeOnly) query = query.eq("effective_status", "ACTIVE");
+      if (limit) query = query.limit(limit);
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -152,10 +162,11 @@ export function useBrokers() {
 export function useBrokerCampaigns() {
   return useQuery({
     queryKey: ["broker_campaigns"],
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("broker_campaigns")
-        .select("*, campaigns(*), brokers(*)")
+        .select("id, campaign_id, broker_id, broker_deposit, agency_match, total_budget, status, created_at, finished_at, campaigns(id, nome, platform, status, daily_budget), brokers(id, nome, email, telefone, ativo)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;

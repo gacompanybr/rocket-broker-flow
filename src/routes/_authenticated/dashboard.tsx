@@ -111,7 +111,7 @@ function DashboardPage() {
   const metrics = useCampaignMetricSummary(range);
   const metricsDaily = useCampaignMetricDaily(range);
   const metricsPrev = useCampaignMetricSummary(prev);
-  const activeAds = useMetaAds({ activeOnly: true });
+  const activeAds = useMetaAds({ activeOnly: true, limit: 8 });
   const social = useSocialMetrics(range);
   const socialPrev = useSocialMetrics(prev);
   const site = useSiteMetrics(range);
