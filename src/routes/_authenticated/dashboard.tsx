@@ -23,17 +23,21 @@ import {
   Search,
   MapPin,
   LineChart as LineChartIcon,
+  Radio,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/kpi-card";
+import { AdCreativeCard } from "@/components/ad-creative-card";
 import { PeriodFilter } from "@/components/period-filter";
 import {
   previousRange,
   rangeForPreset,
-  useCampaignMetrics,
+  useCampaignMetricDaily,
+  useCampaignMetricSummary,
   useCampaigns,
+  useMetaAds,
   useSiteMetrics,
   useSocialMetrics,
   type Range,
@@ -101,8 +105,10 @@ function DashboardPage() {
   const prev = useMemo(() => previousRange(range), [range]);
 
   const campaigns = useCampaigns();
-  const metrics = useCampaignMetrics(range);
-  const metricsPrev = useCampaignMetrics(prev);
+  const metrics = useCampaignMetricSummary(range);
+  const metricsDaily = useCampaignMetricDaily(range);
+  const metricsPrev = useCampaignMetricSummary(prev);
+  const activeAds = useMetaAds({ activeOnly: true });
   const social = useSocialMetrics(range);
   const socialPrev = useSocialMetrics(prev);
   const site = useSiteMetrics(range);
@@ -133,14 +139,23 @@ function DashboardPage() {
 
   const series = useMemo(() => {
     const byDate = new Map<string, { date: string; gasto: number; leads: number }>();
-    for (const r of rows) {
+    for (const r of (metricsDaily.data ?? []).filter((item) => keep(item.campaign_id))) {
       const cur = byDate.get(r.date) ?? { date: r.date, gasto: 0, leads: 0 };
       cur.gasto += Number(r.spend);
       cur.leads += Number(r.leads);
       byDate.set(r.date, cur);
     }
     return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
-  }, [rows]);
+  }, [metricsDaily.data, keep]);
+
+  const activeCampaigns = useMemo(
+    () => (campaigns.data ?? []).filter((campaign) => campaign.platform === "meta" && campaign.status === "active"),
+    [campaigns.data],
+  );
+  const activeCampaignNames = useMemo(
+    () => new Map(activeCampaigns.map((campaign) => [campaign.id, campaign.nome])),
+    [activeCampaigns],
+  );
 
 
   const cpl = totals.leads > 0 ? totals.spend / totals.leads : 0;
@@ -309,6 +324,52 @@ function DashboardPage() {
           </ResponsiveContainer>
         </div>
       </Card>
+
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Radio className="h-4 w-4 text-success" />
+          <h2 className="text-base font-semibold">Em veiculação agora</h2>
+          <Badge variant="outline" className="ml-auto border-success/40 text-success">
+            {activeCampaigns.length} ativas
+          </Badge>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {activeCampaigns.map((campaign) => {
+            const total = totalsPorCampaign?.get(campaign.id);
+            const cplAtivo = total && Number(total.leads) > 0 ? Number(total.spend) / Number(total.leads) : 0;
+            return (
+              <Card key={campaign.id} className="surface-card gap-3 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="line-clamp-2 text-sm font-semibold">{campaign.nome}</h3>
+                  <StatusBadge status={campaign.status} />
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><span className="block text-muted-foreground">Gasto</span><strong>{brl(Number(total?.spend ?? 0))}</strong></div>
+                  <div><span className="block text-muted-foreground">Leads</span><strong>{num(Number(total?.leads ?? 0))}</strong></div>
+                  <div><span className="block text-muted-foreground">CPL</span><strong>{brl(cplAtivo)}</strong></div>
+                  <div><span className="block text-muted-foreground">Orç. diário</span><strong>{campaign.daily_budget ? brl(Number(campaign.daily_budget)) : "—"}</strong></div>
+                </div>
+              </Card>
+            );
+          })}
+          {activeCampaigns.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma campanha ativa no Meta.</p>}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold">Criativos ativos</h2>
+          <Badge variant="secondary">{activeAds.data?.length ?? 0} anúncios</Badge>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {(activeAds.data ?? []).slice(0, 8).map((ad) => (
+            <AdCreativeCard key={ad.id} ad={ad} campaignName={activeCampaignNames.get(ad.campaign_id)} />
+          ))}
+          {!activeAds.isLoading && activeAds.data?.length === 0 && (
+            <p className="text-sm text-muted-foreground">Os criativos aparecerão após a próxima sincronização da Meta.</p>
+          )}
+        </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="surface-card gap-4 p-5">
