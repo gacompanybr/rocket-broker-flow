@@ -37,7 +37,7 @@ export function useCampaigns() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaigns")
-        .select("id, external_id, platform, nome, status, objetivo, daily_budget, criada_em, created_time")
+        .select("id, external_id, platform, nome, status, objetivo, daily_budget, criada_em")
         .order("criada_em", { ascending: false });
       if (error) throw error;
       return data;
