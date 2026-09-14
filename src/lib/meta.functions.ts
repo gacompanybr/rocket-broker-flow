@@ -72,3 +72,14 @@ export const runMetaSync = createServerFn({ method: "POST" })
       data.social === false ? null : await meta.runWithLog("meta_social", (a) => meta.syncMetaSocial(a));
     return { campanhas, social };
   });
+
+export const getMetaVideoPreview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { videoId: string }) => {
+    if (!input?.videoId) throw new Error("Vídeo inválido");
+    return input;
+  })
+  .handler(async ({ data }) => {
+    const meta = await import("./meta.server");
+    return meta.getMetaVideoSource(data.videoId);
+  });

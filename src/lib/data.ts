@@ -50,7 +50,7 @@ export function useCampaignMetrics(range: Range) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaign_metrics")
-        .select("*")
+        .select("campaign_id, date, spend, impressions, reach, clicks, leads")
         .gte("date", range.from)
         .lte("date", range.to)
         .order("date");
@@ -68,6 +68,70 @@ export function useAllCampaignMetrics() {
         .from("campaign_metrics")
         .select("campaign_id, date, spend, leads, clicks, impressions, reach, cost_per_lead")
         .order("date");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useCampaignMetricSummary(range: Range) {
+  return useQuery({
+    queryKey: ["campaign_metrics_summary", range.from, range.to],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("campaign_metrics_summary", {
+        _from: range.from,
+        _to: range.to,
+      });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useCampaignMetricDaily(range: Range) {
+  return useQuery({
+    queryKey: ["campaign_metrics_daily", range.from, range.to],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("campaign_metrics_daily", {
+        _from: range.from,
+        _to: range.to,
+      });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useCampaignHistory(campaignId: string | null) {
+  return useQuery({
+    queryKey: ["campaign_metrics", "campaign", campaignId],
+    enabled: Boolean(campaignId),
+    queryFn: async () => {
+      if (!campaignId) return [];
+      const { data, error } = await supabase
+        .from("campaign_metrics")
+        .select("date, spend, leads, clicks")
+        .eq("campaign_id", campaignId)
+        .order("date");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useMetaAds(options?: { campaignId?: string | null; activeOnly?: boolean }) {
+  const campaignId = options?.campaignId ?? null;
+  const activeOnly = options?.activeOnly ?? false;
+  return useQuery({
+    queryKey: ["meta_ads", campaignId ?? "all", activeOnly ? "active" : "all"],
+    queryFn: async () => {
+      let query = supabase
+        .from("meta_ads")
+        .select("id, external_id, campaign_id, adset_name, nome, status, effective_status, media_type, thumbnail_url, image_url, video_id, body, title, link_url, last_synced_at")
+        .order("updated_at", { ascending: false });
+      if (campaignId) query = query.eq("campaign_id", campaignId);
+      if (activeOnly) query = query.eq("effective_status", "ACTIVE");
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -133,7 +197,7 @@ export function useSiteMetrics(range: Range) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_metrics")
-        .select("*")
+        .select("date, visitas_diarias, seo_score, page_speed_score, posicao_gmb")
         .gte("date", range.from)
         .lte("date", range.to)
         .order("date");
@@ -149,7 +213,7 @@ export function useSocialMetrics(range: Range) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("social_metrics")
-        .select("*")
+        .select("date, seguidores, engajamento, compartilhamentos, alcance_perfil")
         .gte("date", range.from)
         .lte("date", range.to)
         .order("date");
