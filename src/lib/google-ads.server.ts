@@ -2,7 +2,7 @@ import type { Admin } from "./meta.server";
 
 const GOOGLE_ADS_API = "https://connector-gateway.lovable.dev/google_ads/v25";
 const OARCO_CUSTOMER_ID = "7455487545";
-const GOOGLE_MIN_DATE = "2026-06-30";
+const GOOGLE_MIN_DATE = "2026-09-01";
 
 type GoogleCampaignRow = {
   campaign?: {
