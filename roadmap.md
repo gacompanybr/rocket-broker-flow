@@ -6,3 +6,4 @@
 - [x] Carregar galeria e gráfico somente ao abrir uma campanha
 - [x] Limitar miniaturas iniciais e ampliar cache entre páginas
 - [x] Validar velocidade, desktop e prévia de campanha
+- [ ] Conectar e selecionar uma única conta do Google Ads
