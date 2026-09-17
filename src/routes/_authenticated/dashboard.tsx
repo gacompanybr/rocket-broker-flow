@@ -156,8 +156,8 @@ function DashboardPage() {
   }, [metricsDaily.data, keep]);
 
   const activeCampaigns = useMemo(
-    () => (campaigns.data ?? []).filter((campaign) => campaign.platform === "meta" && campaign.status === "active"),
-    [campaigns.data],
+    () => (campaigns.data ?? []).filter((campaign) => campaign.status === "active" && (platform === "all" || campaign.platform === platform)),
+    [campaigns.data, platform],
   );
   const activeCampaignNames = useMemo(
     () => new Map(activeCampaigns.map((campaign) => [campaign.id, campaign.nome])),
@@ -216,11 +216,13 @@ function DashboardPage() {
           ))}
         </div>
         {platform === "google" ? (
-          <Badge variant="secondary">Google Ads ainda não integrado</Badge>
-        ) : (
+          <Badge variant="outline" className="border-primary/40 text-primary">Dados reais · Google Ads</Badge>
+        ) : platform === "meta" ? (
           <Badge variant="outline" className="border-primary/40 text-primary">
             Dados reais · Meta Ads
           </Badge>
+        ) : (
+          <Badge variant="outline" className="border-primary/40 text-primary">Dados reais · Meta + Google</Badge>
         )}
 
       </div>
@@ -359,7 +361,7 @@ function DashboardPage() {
               </Card>
             );
           })}
-          {activeCampaigns.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma campanha ativa no Meta.</p>}
+          {activeCampaigns.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma campanha ativa nesta plataforma.</p>}
         </div>
       </section>
 

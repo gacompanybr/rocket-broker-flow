@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useIntegrationLogs, useSettings } from "@/lib/data";
 import { runMetaSync } from "@/lib/meta.functions";
+import { runGoogleAdsSync } from "@/lib/google-ads.functions";
 import { dateTime } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
@@ -51,15 +52,27 @@ function ConfiguracoesPage() {
   const [threshold, setThreshold] = useState("80");
   const logs = useIntegrationLogs();
   const sync = useServerFn(runMetaSync);
+  const syncGoogle = useServerFn(runGoogleAdsSync);
 
   const metaLogs = (logs.data ?? []).filter((l) => String(l.source).startsWith("meta"));
   const ultimoMeta = metaLogs[0];
   const metaOk = ultimoMeta?.level === "info";
+  const googleLogs = (logs.data ?? []).filter((l) => String(l.source).startsWith("google_ads"));
+  const ultimoGoogle = googleLogs[0];
 
   const sincronizar = useMutation({
     mutationFn: async () => sync({ data: {} }),
     onSuccess: () => {
       toast.success("Sincronização com o Meta executada");
+      void queryClient.invalidateQueries();
+    },
+    onError: (e: Error) => toast.error("Falha na sincronização", { description: e.message }),
+  });
+
+  const sincronizarGoogle = useMutation({
+    mutationFn: async () => syncGoogle(),
+    onSuccess: () => {
+      toast.success("Sincronização com o Google Ads executada");
       void queryClient.invalidateQueries();
     },
     onError: (e: Error) => toast.error("Falha na sincronização", { description: e.message }),
@@ -136,8 +149,7 @@ function ConfiguracoesPage() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Google Ads e Google Business Profile seguem em modo simulado. Campanhas Meta sincronizam a
-          cada 5 minutos e o Instagram 1x por hora.
+          Campanhas Meta sincronizam a cada 5 minutos e o Instagram 1x por hora.
         </p>
         <div className="space-y-2">
           {metaLogs.slice(0, 6).map((l) => (
@@ -163,6 +175,40 @@ function ConfiguracoesPage() {
             <p className="text-xs text-muted-foreground">Nenhum log de integração ainda.</p>
           )}
         </div>
+      </Card>
+
+      <Card className="surface-card gap-4 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold">Integração Google Ads</h2>
+            {ultimoGoogle?.level === "info" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs text-success">
+                <CheckCircle2 className="h-3 w-3" /> Conectado · OArco
+              </span>
+            ) : ultimoGoogle ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2.5 py-1 text-xs text-destructive">
+                <AlertTriangle className="h-3 w-3" /> Erro — ver logs
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+                Aguardando primeira sincronização
+              </span>
+            )}
+          </div>
+          <Button variant="outline" size="sm" onClick={() => sincronizarGoogle.mutate()} disabled={sincronizarGoogle.isPending}>
+            <RefreshCw className={`h-4 w-4 ${sincronizarGoogle.isPending ? "animate-spin" : ""}`} />
+            Sincronizar Google
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Conta exclusiva: OArco Gerenciamento Imobiliário · 745-548-7545. Google Business Profile continua não integrado.
+        </p>
+        {googleLogs.slice(0, 3).map((l) => (
+          <div key={l.id} className="flex flex-col gap-1 rounded-lg border border-border/60 px-3 py-2 text-xs sm:flex-row sm:justify-between">
+            <span className={l.level === "error" ? "break-words text-destructive" : "break-words text-muted-foreground"}>[{l.source}] {l.message}</span>
+            <span className="shrink-0 text-muted-foreground">{dateTime(l.created_at)}</span>
+          </div>
+        ))}
       </Card>
 
       <Card className="surface-card gap-5 p-5">

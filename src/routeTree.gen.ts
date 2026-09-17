@@ -17,6 +17,7 @@ import { Route as AuthenticatedCampanhasRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ApiPublicHooksSyncGoogleAdsRouteImport } from './routes/api/public/hooks/sync-google-ads'
 import { Route as ApiPublicHooksSyncMetaCampaignsRouteImport } from './routes/api/public/hooks/sync-meta-campaigns'
 import { Route as ApiPublicHooksSyncMetaSocialRouteImport } from './routes/api/public/hooks/sync-meta-social'
 
@@ -60,6 +61,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksSyncGoogleAdsRoute =
+  ApiPublicHooksSyncGoogleAdsRouteImport.update({
+    id: '/api/public/hooks/sync-google-ads',
+    path: '/api/public/hooks/sync-google-ads',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksSyncMetaCampaignsRoute =
   ApiPublicHooksSyncMetaCampaignsRouteImport.update({
     id: '/api/public/hooks/sync-meta-campaigns',
@@ -81,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/public/hooks/sync-google-ads': typeof ApiPublicHooksSyncGoogleAdsRoute
   '/api/public/hooks/sync-meta-campaigns': typeof ApiPublicHooksSyncMetaCampaignsRoute
   '/api/public/hooks/sync-meta-social': typeof ApiPublicHooksSyncMetaSocialRoute
 }
@@ -92,6 +100,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/public/hooks/sync-google-ads': typeof ApiPublicHooksSyncGoogleAdsRoute
   '/api/public/hooks/sync-meta-campaigns': typeof ApiPublicHooksSyncMetaCampaignsRoute
   '/api/public/hooks/sync-meta-social': typeof ApiPublicHooksSyncMetaSocialRoute
 }
@@ -105,6 +114,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/public/hooks/sync-google-ads': typeof ApiPublicHooksSyncGoogleAdsRoute
   '/api/public/hooks/sync-meta-campaigns': typeof ApiPublicHooksSyncMetaCampaignsRoute
   '/api/public/hooks/sync-meta-social': typeof ApiPublicHooksSyncMetaSocialRoute
 }
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
+    | '/api/public/hooks/sync-google-ads'
     | '/api/public/hooks/sync-meta-campaigns'
     | '/api/public/hooks/sync-meta-social'
   fileRoutesByTo: FileRoutesByTo
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
+    | '/api/public/hooks/sync-google-ads'
     | '/api/public/hooks/sync-meta-campaigns'
     | '/api/public/hooks/sync-meta-social'
   id:
@@ -141,6 +153,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
+    | '/api/public/hooks/sync-google-ads'
     | '/api/public/hooks/sync-meta-campaigns'
     | '/api/public/hooks/sync-meta-social'
   fileRoutesById: FileRoutesById
@@ -149,6 +162,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicHooksSyncGoogleAdsRoute: typeof ApiPublicHooksSyncGoogleAdsRoute
   ApiPublicHooksSyncMetaCampaignsRoute: typeof ApiPublicHooksSyncMetaCampaignsRoute
   ApiPublicHooksSyncMetaSocialRoute: typeof ApiPublicHooksSyncMetaSocialRoute
 }
@@ -211,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/sync-google-ads': {
+      id: '/api/public/hooks/sync-google-ads'
+      path: '/api/public/hooks/sync-google-ads'
+      fullPath: '/api/public/hooks/sync-google-ads'
+      preLoaderRoute: typeof ApiPublicHooksSyncGoogleAdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/sync-meta-campaigns': {
       id: '/api/public/hooks/sync-meta-campaigns'
       path: '/api/public/hooks/sync-meta-campaigns'
@@ -251,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicHooksSyncGoogleAdsRoute: ApiPublicHooksSyncGoogleAdsRoute,
   ApiPublicHooksSyncMetaCampaignsRoute: ApiPublicHooksSyncMetaCampaignsRoute,
   ApiPublicHooksSyncMetaSocialRoute: ApiPublicHooksSyncMetaSocialRoute,
 }

@@ -259,7 +259,7 @@ function CampanhasPage() {
                   <TableCell className="text-right">{num(t?.reach ?? 0)}</TableCell>
                   <TableCell className="text-right">{num(t?.impressions ?? 0)}</TableCell>
                   <TableCell className="text-right">{brl(cpl)}</TableCell>
-                  {isAdmin && (
+                  {isAdmin && c.platform === "meta" && (
                     <TableCell
                       className="text-right whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
