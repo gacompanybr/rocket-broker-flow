@@ -41,6 +41,9 @@ function AuthenticatedLayout() {
       .on("postgres_changes", { event: "*", schema: "public", table: "campaign_metrics" }, () =>
         ["campaign_metrics", "campaign_metrics_summary", "campaign_metrics_daily"].forEach(invalidate),
       )
+      .on("postgres_changes", { event: "*", schema: "public", table: "campaigns" }, () =>
+        invalidate("campaigns"),
+      )
       .on("postgres_changes", { event: "*", schema: "public", table: "broker_campaigns" }, () =>
         invalidate("broker_campaigns"),
       )
